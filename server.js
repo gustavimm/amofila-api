@@ -1,6 +1,9 @@
 const express = require ('express'); //1. Importando o Express
 const app = express(); //2. Criando a aplicação Express
 const PORT=3000;// 3. Definindo a porta do servidor
+// CONFIGURAÇÕES (MIDDLEWARES)
+// Abrindo o  http://localhost:3000 automaticamente
+app.use(express.static('public'));
 
 //Configuração da Escala Mensal de Trabalho
 
@@ -15,27 +18,16 @@ const escala = {
 let indiceFila = 0;
 
 app.get('/vez', (req, res) => {
-    const agora = new Date();
-    //Forçando uma hora para teste (depois voltamos para o automático)
-    const horaAtual = "08"; 
-
-    //Buscando a lista baseada na hora
+    const horaAtual = "08"; // Teste fixo
     let vendedoresAgora = escala[horaAtual] || escala["11"];
+    let quemEstaNaVez = vendedoresAgora[indiceFila % vendedoresAgora.length];
 
-    //Teste
-    console.log("Vendedores encontrados:", vendedoresAgora);
-    console.log("Tamanho da lista:", vendedoresAgora.length);
-    console.log("Índice da fila atual:", indiceFila % vendedoresAgora.length);
-
-    //Verificando se a lista realmente existe para não dar erro
-    if (vendedoresAgora) {
-        let quemEstaNaVez = vendedoresAgora [indiceFila % vendedoresAgora.length];
-        res.send(`<h1>Vez de: ${quemEstaNaVez}</h1><p>Horário: ${horaAtual}h</p>`);
-    }else{
-        res.send("<h1>Ninguém escalado agora!</h1>");
-    }
+    // Agora vamos enviar como JSON para o site conseguir ler fácil
+    res.json({
+        vendedor: quemEstaNaVez,
+        horario: horaAtual
+    });
 });
-
 app.listen(PORT, () => {
     console.log(`🚀 AmoFila rodando em http://localhost:${PORT}`);
 });
