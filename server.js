@@ -8,7 +8,7 @@ app.use(express.static('public'));
 //Configuração da Escala Mensal de Trabalho
 
 const escala = {
-    "08": ["joao", "Ana Carolina"], // Alternado Dupla
+    "08": ["Gustavo", "Ana Carolina"], // Alternado Dupla
     "09": ["Lavinia"], // Solo (Tifani De Férias)
     "10": ["Amanda"], //Solo (Horário das 10h sozinha(o))
     "11": ["Gustavo", "Ana Carolina", "Lavinia", "Amanda"] // Alternado Dupla
@@ -28,6 +28,13 @@ app.get('/vez', (req, res) => {
         horario: horaAtual
     });
 });
+
+// Rota para avançar o índice da fila
+app.post('/proximo', (req, res) => {
+    indiceFila++; // Aumenta 1 na contagem
+    res.json({ success: true, novoIndice: indiceFila });
+});
+
 app.listen(PORT, () => {
     console.log(`🚀 AmoFila rodando em http://localhost:${PORT}`);
 });

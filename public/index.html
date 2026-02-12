@@ -8,7 +8,7 @@
 <body>
 
     <h1>Painel de Vendas - AMO INTERNET</h1>
-    <div id="Painel-vez">
+    <div id="painel-vez">
         <p>Carregando quem está na vez...</p>
     </div>
 
@@ -16,9 +16,37 @@
     
 
     <script>
-        function proximaVenda(){
-            alert('Botão clicado! Implementar lógica para avançar a venda.');
+       function proximaVenda(){
+        // 1. Fetch leva o aviso de que a venda foi pega para o servidor
+        fetch('/proximo', {method: 'POST'})
+        .then(resposta => resposta.json())
+        .then(dados =>{
+            console.log('Venda atualizada:', dados);
+            buscarVez(); // Atualiza o painel com a nova vez
+        })
+
+        .catch(erro => console.error('Erro ao atualizar fila:', erro));
+       }
+
+        // Função para buscar quem está na vez na API
+
+        function buscarVez(){
+            // O fetch vai até a nossa rota que criamos no server.js
+            fetch ('/vez')
+            .then(resposta => resposta.json()) // Converte a resposta para JSON
+            .then(dados => {
+                // Atualizamos o conteúdo do div com o nome da pessoa que está na vez
+                const painel = document.getElementById('painel-vez');
+                painel.innerHTML = `<h2> Vez de: <strong> ${dados.vendedor}</strong> </h2>
+                <p>Horário atual da escala: ${dados.horario}h</p>`;
+                
+            })
+
+            .catch(erro => console.error('Erro ao buscar a vez:', erro));
         }
+
+        // 3. Executando a função para buscar a vez quando a página carregar
+        buscarVez();
     </script>
     
 </body>
