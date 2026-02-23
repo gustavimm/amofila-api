@@ -1,0 +1,43 @@
+body{
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #eef2f3 /*Cinza bem claro*/;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+/* O cartão onde o nome aparece*/
+
+#painel-vez{
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    border-top: 10px solid #3bf323 /*verde da AMO*/;
+    min-width: 250px;
+}
+
+/*Estabilizando o botão "Peguei Venda" */
+
+button{
+    margin-top: 25px;
+    padding: 15px 30px;
+    background-color: #3bf323;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+}
+
+button:hover{
+    background-color: #32c21e;
+    transform: scale(1.05);
+    opacity: 0.8;
+}
