@@ -3,52 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AMO FILA API</title>
+    <title>AMO FILA - Painel Oficial</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <h1>Painel de Vendas - AMO INTERNET</h1>
-    <div id="painel-vez">
-        <p>Carregando quem está na vez...</p>
+    <div id="container-principal">
+        <img src="logo-amo.png" alt="AMO INTERNET" id="logo-header">
+    
+        <div id="card-fila">
+            <h1>PAINEL DE VENDAS</h1>
+            <div id="painel-vez">
+                <p>Sincronizando fila...</p>
+            </div>
+            <button onclick="proximaVenda()">PEGUEI VENDA!</button>
+        </div>
     </div>
 
-    <button onclick="proximaVenda()">Peguei Venda!</button>
-    
+    <div id="toast">Venda registrada! ✅</div>
 
     <script>
-       function proximaVenda(){
-        // 1. Fetch leva o aviso de que a venda foi pega para o servidor
-        fetch('/proximo', {method: 'POST'})
-        .then(resposta => resposta.json())
-        .then(dados =>{
-            console.log('Venda atualizada:', dados);
-            buscarVez(); // Atualiza o painel com a nova vez
-        })
+        function mostrarToast() {
+            const toast = document.getElementById("toast");
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        }
 
-        .catch(erro => console.error('Erro ao atualizar fila:', erro));
-       }
-
-        // Função para buscar quem está na vez na API
+        function proximaVenda(){
+            fetch('/proximo', {method: 'POST'})
+            .then(resposta => resposta.json())
+            .then(dados =>{
+                mostrarToast(); // Chama a mensagemzinha
+                buscarVez(); 
+            })
+            .catch(erro => console.error('Erro ao atualizar fila:', erro));
+        }
 
         function buscarVez(){
-            // O fetch vai até a nossa rota que criamos no server.js
-            fetch ('/vez')
-            .then(resposta => resposta.json()) // Converte a resposta para JSON
+            fetch('/vez')
+            .then(resposta => resposta.json())
             .then(dados => {
-                // Atualizamos o conteúdo do div com o nome da pessoa que está na vez
                 const painel = document.getElementById('painel-vez');
-                painel.innerHTML = `<h2> Vez de: <strong> ${dados.vendedor}</strong> </h2>
-                <p>Horário atual da escala: ${dados.horario}h</p>`;
                 
-            })
+                // Reinicia a animação de transição
+                painel.classList.remove('fade-in');
+                void painel.offsetWidth; 
+                painel.classList.add('fade-in');
 
+                painel.innerHTML = `
+                    <h2>Vez de:</h2>
+                    <strong>${dados.vendedor}</strong>
+                    <p class="horario-escala">Escala de ${dados.horario}</p>
+                `;
+            })
             .catch(erro => console.error('Erro ao buscar a vez:', erro));
         }
 
-        // 3. Executando a função para buscar a vez quando a página carregar
+        // Inicia a busca e o intervalo de sincronização
         buscarVez();
+        setInterval(buscarVez, 5000);
     </script>
-    
 </body>
 </html>

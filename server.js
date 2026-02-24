@@ -1,40 +1,57 @@
-const express = require ('express'); //1. Importando o Express
-const app = express(); //2. Criando a aplicação Express
-const PORT=3000;// 3. Definindo a porta do servidor
-// CONFIGURAÇÕES (MIDDLEWARES)
-// Abrindo o  http://localhost:3000 automaticamente
+const fs = require('fs'); 
+const express = require('express'); 
+const app = express(); 
+const PORT = process.env.PORT || 3000;
+
 app.use(express.static('public'));
 
-//Configuração da Escala Mensal de Trabalho
-
+// 1. ESCALA
 const escala = {
-    "08": ["Gustavo", "Ana Carolina"], // Alternado Dupla
-    "09": ["Lavinia"], // Solo (Tifani De Férias)
-    "10": ["Amanda"], //Solo (Horário das 10h sozinha(o))
-    "11": ["Gustavo", "Ana Carolina", "Lavinia", "Amanda"] // Alternado Dupla
-
+    "08": ["Gustavo", "Ana Carolina"],
+    "09": ["Lavinia"],
+    "10": ["Amanda"],
+    "11": ["Gustavo", "Ana Carolina", "Lavinia", "Amanda"]
 };
 
-let indiceFila = 0;
+// 2. FUNÇÕES DE PERSISTÊNCIA (Deixe-as aqui no topo)
+function carregarIndice() {
+    try {
+        const dado = fs.readFileSync('progresso.txt', 'utf-8');
+        return parseInt(dado) || 0;
+    } catch (err) {
+        return 0; 
+    }
+}
 
+function salvarIndice(novoValor){
+    fs.writeFileSync('progresso.txt', novoValor.toString(), 'utf-8');
+}
+
+// 3. VARIÁVEL GLOBAL (Apenas UMA vez)
+let indiceFila = carregarIndice(); 
+
+// 4. ROTAS
 app.get('/vez', (req, res) => {
-    const horaAtual = "08"; // Teste fixo
-    let vendedoresAgora = escala[horaAtual] || escala["11"];
+    const agora = new Date();
+    let horaReal = agora.getHours().toString().padStart(2, '0');
+    let horaDaEscala = escala[horaReal] ? horaReal : "11";
+    let vendedoresAgora = escala[horaDaEscala];
     let quemEstaNaVez = vendedoresAgora[indiceFila % vendedoresAgora.length];
-
-    // Agora vamos enviar como JSON para o site conseguir ler fácil
+    
     res.json({
         vendedor: quemEstaNaVez,
-        horario: horaAtual
+        horario: `${horaReal}:00`
     });
 });
 
-// Rota para avançar o índice da fila
+// Rota de avanço (APENAS UMA VEZ e salvando no arquivo)
 app.post('/proximo', (req, res) => {
-    indiceFila++; // Aumenta 1 na contagem
+    indiceFila++;
+    salvarIndice(indiceFila); // Aqui salvamos o progresso!
     res.json({ success: true, novoIndice: indiceFila });
 });
 
 app.listen(PORT, () => {
     console.log(`🚀 AmoFila rodando em http://localhost:${PORT}`);
 });
+

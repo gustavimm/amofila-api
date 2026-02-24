@@ -1,43 +1,132 @@
-body{
+/* Definindo as cores do tema escuro */
+:root {
+    --verde-neon: #00FF00; /* O verde da logo */
+    --fundo-principal: #121212; /* Um preto quase absoluto para o fundo geral */
+    --fundo-card: #1E1E1E; /* Um cinza chumbo para o cartão se destacar */
+    --texto-branco: #FFFFFF;
+    --texto-cinza: #AAAAAA;
+    --preto-botao: #000000;
+}
+
+body {
     margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #eef2f3 /*Cinza bem claro*/;
+    font-family: 'Inter', sans-serif;
+    /* Gradiente sutil e escuro para dar profundidade */
+    background: linear-gradient(135deg, var(--fundo-principal) 0%, #1a1a1a 100%);
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     height: 100vh;
+    color: var(--texto-branco); /* Texto base branco */
 }
 
-/* O cartão onde o nome aparece*/
+#logo-header {
+    width: 160px;
+    margin-bottom: 30px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    /* Dica pro: um brilho verde sutil na logo escura fica animal */
+    filter: drop-shadow(0 0 10px rgba(0, 255, 0, 0.3));
+}
 
-#painel-vez{
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+#card-fila {
+    background-color: var(--fundo-card); /* Fundo do cartão cinza escuro */
+    padding: 45px;
+    border-radius: 24px;
+    /* Sombra mais difusa para o tema escuro */
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
     text-align: center;
-    border-top: 10px solid #3bf323 /*verde da AMO*/;
-    min-width: 250px;
+    width: 380px;
+    /* Borda sutil para definir o card */
+    border: 1px solid #333;
 }
 
-/*Estabilizando o botão "Peguei Venda" */
+h1 {
+    font-size: 0.85rem;
+    color: var(--texto-cinza); /* Título em cinza para não ofuscar */
+    letter-spacing: 3px;
+    margin-bottom: 35px;
+    font-weight: 500;
+}
 
-button{
-    margin-top: 25px;
-    padding: 15px 30px;
-    background-color: #3bf323;
-    color: white;
-    border: none;
-    border-radius: 8px;
+/* Animação de entrada */
+.fade-in { animation: fadeIn 0.6s ease-out forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+#painel-vez h2 {
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: var(--texto-branco);
+}
+
+#painel-vez strong {
+    display: block;
+    font-size: 3.2rem;
+    color: var(--verde-neon); /* Nome brilha em verde neon! */
+    margin: 15px 0;
+    font-weight: 800;
+    /* Linha sutil embaixo */
+    border-bottom: 2px solid rgba(0, 255, 0, 0.2);
+    padding-bottom: 15px;
+    text-shadow: 0 0 15px rgba(0, 255, 0, 0.4); /* Efeito de brilho no texto */
+}
+
+.horario-escala {
+    font-size: 0.9rem;
+    color: var(--texto-cinza);
+    margin-top: 20px;
+}
+
+button {
+    margin-top: 35px;
+    width: 100%;
+    padding: 20px;
+    background-color: var(--preto-botao);
+    color: var(--verde-neon);
+    border: 1px solid var(--verde-neon); /* Borda fina verde */
+    border-radius: 14px;
     font-size: 1.1rem;
-    font-weight: bold;
+    font-weight: 800;
+    letter-spacing: 1px;
     cursor: pointer;
-    transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+    transition: all 0.3s ease;
+    /* Brilho verde no botão */
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
 }
 
-button:hover{
-    background-color: #32c21e;
-    transform: scale(1.05);
-    opacity: 0.8;
+button:hover {
+    background-color: var(--verde-neon);
+    color: var(--preto-botao);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 255, 0, 0.4);
 }
+
+/* Toast (Notificação) */
+#toast {
+    visibility: hidden;
+    min-width: 280px;
+    background-color: var(--fundo-card); /* Fundo escuro */
+    color: var(--verde-neon); /* Texto verde */
+    text-align: center;
+    border-radius: 50px;
+    padding: 16px 24px;
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+    z-index: 100;
+}
+
+#toast.show {
+    visibility: visible;
+    animation: fadein-toast 0.5s forwards, fadeout-toast 1.5s 2.5s forwards;
+}
+
+@keyframes fadein-toast { from { bottom: 0; opacity: 0; } to { bottom: 40px; opacity: 1; } }
+@keyframes fadeout-toast { from { bottom: 40px; opacity: 1; } to { bottom: 0; opacity: 0; } }
