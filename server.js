@@ -9,14 +9,14 @@ app.use(express.static('public'));
 const escala = {
     // Manhã
     "08": ["Amanda", "Ana Carolina"],
-    "09": ["Lavinia", "Gustavo"], // Tifani inclusa para quando voltar de férias
+    "09": ["Lavinia", "Gustavo"],
     "10": ["Tifani"],
     
     // Todos juntos (11:00 às 16:59)
     "11": ["Amanda", "Ana Carolina", "Lavinia", "Gustavo", "Tifani"],
     
     // Tarde - Saídas graduais
-    "17": ["Lavinia", "Tifani", "Amanda"], // Gustavo e Ana saíram
+    "17": ["Lavinia", "Tifani", "Gustavo"], // Gustavo e Ana saíram
     "18": ["Amanda"] // Lavinia e Tifani saíram, Amanda solo
 };
 // 2. FUNÇÕES DE PERSISTÊNCIA (Deixe-as aqui no topo)
