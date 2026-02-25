@@ -49,25 +49,38 @@
             .catch(erro => console.error('Erro ao atualizar fila:', erro));
         }
 
-        function buscarVez(){
-            fetch('/vez')
-            .then(resposta => resposta.json())
-            .then(dados => {
-                const painel = document.getElementById('painel-vez');
-                
-                // Reinicia a animação de transição
-                painel.classList.remove('fade-in');
-                void painel.offsetWidth; 
-                painel.classList.add('fade-in');
+      let vendedorAnterior = ""; 
 
-                painel.innerHTML = `
-                    <h2>Vez de:</h2>
-                    <strong>${dados.vendedor}</strong>
-                    <p class="horario-escala">Escala de ${dados.horario}</p>
-                `;
-            })
-            .catch(erro => console.error('Erro ao buscar a vez:', erro));
+    function buscarVez() {
+    fetch('/vez')
+    .then(resposta => response.json())
+    .then(dados => {
+        const painel = document.getElementById('painel-vez');
+
+        // 2. Lógica do Som (Sua lógica está 10/10)
+        if (vendedorAnterior !== "" && vendedorAnterior !== dados.vendedor) {
+            const som = document.getElementById('som-notificacao');
+            som.play().catch(e => console.log("Aguardando interação para tocar som..."));
         }
+        
+        vendedorAnterior = dados.vendedor; // Atualiza a memória para a próxima volta
+
+        // 3. Atualiza o Log de Vendas
+        atualizarHistorico();
+
+        // 4. Interface e Animação
+        painel.classList.remove('fade-in');
+        void painel.offsetWidth; 
+        painel.classList.add('fade-in');
+
+        painel.innerHTML = `
+            <h2>Vez de:</h2>
+            <strong>${dados.vendedor}</strong>
+            <p class="horario-escala">Escala de ${dados.horario}</p>
+        `;
+    })
+    .catch(erro => console.error('Erro ao buscar a vez:', erro));
+}
 
         // Inicia a busca e o intervalo de sincronização
         buscarVez();
