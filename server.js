@@ -98,21 +98,26 @@ app.post('/reordenar', (req, res) => {
     let chaveEscala = (horaReal >= 11 && horaReal < 17) ? "11" : horaReal.toString().padStart(2, '0');
     
     if (!escala[chaveEscala]) chaveEscala = "11";
-    const vendedores = escala[chaveEscala];
+    let vendedores = escala[chaveEscala]; // Trocado de const para let para podermos reorganizar
 
     if (vendedores.length > 1) {
-        // 1. Descobre a posição EXATA de quem está na tela agora
+        // 1. Descobre a posição de quem está na tela agora
         const indexAtual = indiceFila % vendedores.length;
         
-        // 2. Tira ESSE vendedor específico da lista (onde quer que ele esteja)
-        const vendedorPulado = vendedores.splice(indexAtual, 1)[0];
+        // 2. REORGANIZAÇÃO MÁGICA: Corta a fila e coloca quem está na tela como o 1º da lista
+        vendedores = [...vendedores.slice(indexAtual), ...vendedores.slice(0, indexAtual)];
         
-        // 3. Joga ele para o final da fila
-        vendedores.push(vendedorPulado);
+        // 3. Agora tira esse 1º (que é quem estava na tela) e joga para o final
+        const pulado = vendedores.shift();
+        vendedores.push(pulado);
         
-        // 4. Salva a nova ordem permanentemente 
-        // (NÃO zeramos o indiceFila, assim a fila continua fluindo naturalmente!)
+        // 4. Atualiza a escala oficial e salva permanentemente
+        escala[chaveEscala] = vendedores;
         salvarEscala(escala);
+        
+        // 5. ZERA O ÍNDICE! Agora a fila começa limpa a partir do novo primeiro
+        indiceFila = 0;
+        salvarIndice(0);
         
         res.json({ success: true, novaLista: vendedores });
     } else {
