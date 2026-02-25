@@ -91,7 +91,7 @@ app.post('/proximo', (req, res) => {
     res.json({ success: true });
 });
 
-// AQUI ESTÁ A MUDANÇA: Agora ele salva a troca!
+
 app.post('/reordenar', (req, res) => {
     const agora = new Date();
     const horaReal = parseInt(agora.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit" }));
@@ -101,16 +101,17 @@ app.post('/reordenar', (req, res) => {
     const vendedores = escala[chaveEscala];
 
     if (vendedores.length > 1) {
-        // 1. Move o atual para o final
-        const primeiro = vendedores.shift();
-        vendedores.push(primeiro);
+        // 1. Descobre a posição EXATA de quem está na tela agora
+        const indexAtual = indiceFila % vendedores.length;
         
-        // 2. O SEGREDO: Resetar o índice para 0
-        // Isso garante que o novo primeiro nome seja a 'vez' atual
-        indiceFila = 0;
-        salvarIndice(0);
+        // 2. Tira ESSE vendedor específico da lista (onde quer que ele esteja)
+        const vendedorPulado = vendedores.splice(indexAtual, 1)[0];
         
-        // 3. Salva a nova ordem permanentemente
+        // 3. Joga ele para o final da fila
+        vendedores.push(vendedorPulado);
+        
+        // 4. Salva a nova ordem permanentemente 
+        // (NÃO zeramos o indiceFila, assim a fila continua fluindo naturalmente!)
         salvarEscala(escala);
         
         res.json({ success: true, novaLista: vendedores });
@@ -118,7 +119,6 @@ app.post('/reordenar', (req, res) => {
         res.json({ success: false, message: "Apenas um vendedor na lista." });
     }
 });
-
 app.get('/historico', (req, res) => { res.json(historicoVendas); });
 
 app.post('/excluir-venda', express.json(), (req, res) => {
