@@ -2,6 +2,7 @@ const fs = require('fs');
 const express = require('express'); 
 const app = express(); 
 const PORT = process.env.PORT || 3000;
+let historicoVendas = []; // Esta variável vai guardar as últimas 5 vendas na memória
 
 app.use(express.static('public'));
 
@@ -78,9 +79,28 @@ app.get('/vez', (req, res) => {
 
 // Rota de avanço (APENAS UMA VEZ e salvando no arquivo)
 app.post('/proximo', (req, res) => {
+    const agora = new Date();
+    // Pega a hora certinha de Brasília para o Log
+    const horaLog = agora.toLocaleString("pt-BR", { 
+        timeZone: "America/Sao_Paulo", 
+        hour: "2-digit", 
+        minute: "2-digit" 
+    });
+
+    // 1. Identifica quem está pegando a venda AGORA (antes de aumentar o índice)
+    const horaReal = parseInt(agora.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit" }));
+    let chave = (horaReal >= 11 && horaReal < 17) ? "11" : horaReal.toString().padStart(2, '0');
+    let listaVendedores = escala[chave] || escala["11"];
+    let vendedorQuePegou = listaVendedores[indiceFila % listaVendedores.length];
+
+    // 2. Adiciona ao início da lista (unshift) e mantém apenas as últimas 5
+    historicoVendas.unshift({ nome: vendedorQuePegou, hora: horaLog });
+    if (historicoVendas.length > 5) historicoVendas.pop();
+
+    // 3. Avança a fila normalmente
     indiceFila++;
-    salvarIndice(indiceFila); // Aqui salvamos o progresso!
-    res.json({ success: true, novoIndice: indiceFila });
+    salvarIndice(indiceFila);
+    res.json({ success: true });
 });
 
 // Rota para mover o vendedor atual para o final da fila
@@ -102,6 +122,11 @@ app.post('/reordenar', (req, res) => {
     } else {
         res.json({ success: false, message: "Apenas um vendedor na lista." });
     }
+});
+
+// Rota para o site buscar a lista de vendas recentes
+app.get('/historico', (req, res) => {
+    res.json(historicoVendas);
 });
 
 app.listen(PORT, () => {
