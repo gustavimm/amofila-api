@@ -18,6 +18,7 @@ body {
     align-items: center;
     height: 100vh;
     color: var(--texto-branco); /* Texto base branco */
+    padding-top: 40px; /* Adiciona uma margem de segurança no topo */
 }
 
 #logo-header {
