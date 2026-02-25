@@ -38,11 +38,18 @@ let indiceFila = carregarIndice();
 
 // 4. ROTAS
 app.get('/vez', (req, res) => {
+    // Captura a hora exata de Brasília, não importa onde o servidor esteja
     const agora = new Date();
-    const horaReal = agora.getHours();
+    const horaBrasilia = agora.toLocaleString("pt-BR", { 
+        timeZone: "America/Sao_Paulo", 
+        hour: "2-digit", 
+        hour12: false 
+    });
+
+    const horaReal = parseInt(horaBrasilia);
     let chaveEscala = "";
 
-    // Lógica de Faixas de Horário
+    // Lógica de faixas de horário da AMO INTERNET
     if (horaReal === 8) {
         chaveEscala = "08";
     } else if (horaReal === 9) {
@@ -56,7 +63,6 @@ app.get('/vez', (req, res) => {
     } else if (horaReal === 18) {
         chaveEscala = "18";
     } else {
-        // Fora do horário comercial, mantém a escala cheia como padrão ou aviso de fechado
         chaveEscala = "11"; 
     }
 
@@ -65,8 +71,8 @@ app.get('/vez', (req, res) => {
 
     res.json({
         vendedor: quemEstaNaVez,
-        horario: `${horaReal.toString().padStart(2, '0')}:00`,
-        isSolo: vendedoresAgora.length === 1 // Amanda saberá quando estiver sozinha
+        horario: `${horaBrasilia}:00`,
+        isSolo: vendedoresAgora.length === 1
     });
 });
 
