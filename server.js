@@ -129,6 +129,19 @@ app.get('/historico', (req, res) => {
     res.json(historicoVendas);
 });
 
+// Rota para excluir uma venda específica do histórico
+app.post('/excluir-venda', express.json(), (req, res) => {
+    const { index } = req.body;
+    
+    if (index !== undefined && index >= 0 && index < historicoVendas.length) {
+        // Remove 1 item na posição do índice
+        historicoVendas.splice(index, 1);
+        res.json({ success: true });
+    } else {
+        res.json({ success: false, message: "Erro ao excluir item." });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`🚀 AmoFila rodando em http://localhost:${PORT}`);
 });
