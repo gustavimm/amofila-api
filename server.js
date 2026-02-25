@@ -101,10 +101,16 @@ app.post('/reordenar', (req, res) => {
     const vendedores = escala[chaveEscala];
 
     if (vendedores.length > 1) {
+        // 1. Move o atual para o final
         const primeiro = vendedores.shift();
         vendedores.push(primeiro);
         
-        // SALVAMENTO PERMANENTE
+        // 2. O SEGREDO: Resetar o índice para 0
+        // Isso garante que o novo primeiro nome seja a 'vez' atual
+        indiceFila = 0;
+        salvarIndice(0);
+        
+        // 3. Salva a nova ordem permanentemente
         salvarEscala(escala);
         
         res.json({ success: true, novaLista: vendedores });
