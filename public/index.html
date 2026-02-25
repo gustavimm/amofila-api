@@ -48,29 +48,29 @@
             setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
         }
 
-       function atualizarHistorico() {
-    fetch('/historico')
-        .then(res => res.json())
-        .then(dados => {
-            const lista = document.getElementById('lista-historico');
-            if (lista) {
-                // Adicionamos (venda, index) para saber qual item estamos mapeando
-                lista.innerHTML = dados.map((venda, index) => `
-                    <li style="margin-bottom: 10px; padding: 10px; background: rgba(255, 255, 255, 0.03); border-left: 3px solid var(--verde-neon); border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <span style="color: var(--verde-neon); font-weight: bold; font-size: 0.9rem;">${venda.nome}</span>
-                            <span style="color: #444; font-size: 0.75rem;"> às ${venda.hora}</span>
-                        </div>
-                        
-                        <button onclick="excluirVenda(${index})" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 1.1rem; padding: 5px; transition: transform 0.2s;">
-                            🗑️
-                        </button>
-                    </li>
-                `).join('');
-            }
-        })
-        .catch(err => console.error("Erro ao carregar histórico:", err));
-}
+     function atualizarHistorico() {
+            fetch('/historico')
+                .then(res => res.json())
+                .then(dados => {
+                    const lista = document.getElementById('lista-historico');
+                    if (lista) {
+                        // Adicionamos (venda, index) para saber qual item estamos mapeando
+                        lista.innerHTML = dados.map((venda, index) => `
+                            <li style="margin-bottom: 10px; padding: 8px 10px; background: rgba(255, 255, 255, 0.03); border-left: 3px solid var(--verde-neon); border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <span style="color: var(--verde-neon); font-weight: bold; font-size: 0.85rem;">${venda.nome}</span> 
+                                    <span style="color: #444; font-size: 0.7rem;"> às ${venda.hora}</span>
+                                </div>
+                                
+                                <button onclick="excluirVenda(${index})" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 0.9rem; padding: 2px; margin-left: 10px; transition: transform 0.2s; opacity: 0.7;">
+                                    🗑️
+                                </button>
+                            </li>
+                        `).join('');
+                    }
+                })
+                .catch(err => console.error("Erro ao carregar histórico:", err));
+        }
         function proximaVenda(){
             fetch('/proximo', {method: 'POST'})
             .then(resposta => resposta.json())
