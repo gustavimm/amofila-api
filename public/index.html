@@ -67,6 +67,18 @@
         // Inicia a busca e o intervalo de sincronização
         buscarVez();
         setInterval(buscarVez, 5000);
+
+        function reordenarFila() {
+    fetch('/reordenar', { method: 'POST' })
+    .then(res => res.json())
+    .then(dados => {
+        if (dados.success) {
+            buscarVez(); // Atualiza a tela com o novo primeiro
+            mostrarToast(); // Dá o feedback visual
+        }
+    })
+    .catch(err => console.error("Erro ao reordenar:", err));
+}
     </script>
 </body>
 </html>
