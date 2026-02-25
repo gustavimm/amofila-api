@@ -152,7 +152,7 @@ app.get('/reset-geral', (req, res) => {
     escala["08"] = ["Amanda", "Ana Carolina"];
     escala["09"] = ["Gustavo", "Lavinia"];
     escala["10"] = ["Tifani"];
-    escala["11"] = ["Amanda", "Ana Carolina", "Lavinia", "Gustavo", "Tifani"];
+    escala["11"] = ["Amanda", "Ana Carolina", "Gustavo", "Lavinia", "Tifani"];
     escala["17"] = ["Lavinia", "Tifani", "Gustavo"];
     escala["18"] = ["Amanda"];
 
