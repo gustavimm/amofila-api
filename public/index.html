@@ -92,7 +92,7 @@ function atualizarHistorico() {
             .catch(erro => console.error('Erro ao atualizar fila:', erro));
         }
 
-        function buscarVez() {
+       function buscarVez() {
             fetch('/vez')
             .then(resposta => resposta.json())
             .then(dados => {
@@ -106,6 +106,14 @@ function atualizarHistorico() {
                 vendedorAnterior = dados.vendedor;
                 atualizarHistorico();
 
+                // NOVO: Preenche a caixinha de seleção com os nomes do horário
+                const select = document.getElementById('select-vendedor');
+                if (dados.filaAtual) {
+                    select.innerHTML = dados.filaAtual.map(nome => 
+                        `<option value="${nome}">${nome}</option>`
+                    ).join('');
+                }
+
                 painel.classList.remove('fade-in');
                 void painel.offsetWidth; 
                 painel.classList.add('fade-in');
@@ -116,11 +124,8 @@ function atualizarHistorico() {
                     <p class="horario-escala">Escala de ${dados.horario}</p>
                 `;
             })
-            .catch(erro => {
-                console.error('Erro ao buscar a vez:', erro);
-            });
+            .catch(erro => console.error('Erro ao buscar a vez:', erro));
         }
-
        function reordenarFila() {
     // Adiciona essa trava de segurança
     if (confirm("Você realmente deseja pular o início da fila ou trocar a ordem?")) {
@@ -152,6 +157,29 @@ function atualizarHistorico() {
         .catch(err => console.error("Erro ao excluir:", err));
     }
 }
+
+        function definirVezDireto() {
+            const select = document.getElementById('select-vendedor');
+            const nomeEscolhido = select.value;
+
+            if (!nomeEscolhido) return;
+
+            if (confirm(`Tem certeza que deseja passar a vez diretamente para ${nomeEscolhido}?`)) {
+                fetch('/definir-vez', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ vendedorEscolhido: nomeEscolhido })
+                })
+                .then(res => res.json())
+                .then(dados => {
+                    if (dados.success) {
+                        buscarVez();
+                        mostrarToast(`Vez alterada para ${nomeEscolhido}! 🔄`);
+                    }
+                })
+                .catch(err => console.error("Erro ao definir vez:", err));
+            }
+        }
 
         // Inicialização
         buscarVez();
