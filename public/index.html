@@ -29,18 +29,20 @@
     <div id="toast">Venda registrada! ✅</div>
 
     <script>
-        function mostrarToast() {
-            const toast = document.getElementById("toast");
-            toast.className = "show";
-            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
-        }
 
+    function mostrarToast(texto) {
+    const toast = document.getElementById("toast");
+    toast.innerText = texto; // Altera o texto do aviso
+    toast.className = "show";
+    setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+}
         function proximaVenda(){
             fetch('/proximo', {method: 'POST'})
             .then(resposta => resposta.json())
             .then(dados =>{
-                mostrarToast(); // Chama a mensagemzinha
+                mostrarToast(); // Chama a mensagem
                 buscarVez(); 
+                mostrarToast("Venda registrada! ✅"); // Passando o texto da venda
             })
             .catch(erro => console.error('Erro ao atualizar fila:', erro));
         }
@@ -76,6 +78,7 @@
         if (dados.success) {
             buscarVez(); // Atualiza a tela com o novo primeiro
             mostrarToast(); // Dá o feedback visual
+            mostrarToast("Ordem alterada! 🔄"); // Passamos o texto da troca
         }
     })
     .catch(err => console.error("Erro ao reordenar:", err));
