@@ -14,10 +14,10 @@ const escala = {
     "10": ["Tifani"],
     
     // Todos juntos (11:00 às 16:59)
-    "11": ["Amanda", "Ana Carolina", "Lavinia", "Gustavo", "Tifani"],
+    "11": ["Amanda", "Ana Carolina", "Gustavo", "Lavinia", "Tifani"],
     
     // Tarde - Saídas graduais
-    "17": ["Lavinia", "Tifani", "Gustavo"], // Gustavo e Ana saíram
+    "17": ["Gustavo", "Tifani", "Lavinia"], // Gustavo e Ana saíram
     "18": ["Amanda"] // Lavinia e Tifani saíram, Amanda solo
 };
 // 2. FUNÇÕES DE PERSISTÊNCIA (Deixe-as aqui no topo)
