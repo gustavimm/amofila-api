@@ -70,7 +70,8 @@ app.get('/vez', (req, res) => {
     res.json({
         vendedor: quemEstaNaVez,
         horario: `${horaBrasilia}:00`,
-        isSolo: vendedoresAgora.length === 1
+        isSolo: vendedoresAgora.length === 1,
+        filaAtual: vendedoresAgora // ENVIANDO A LISTA PARA O SITE
     });
 });
 
@@ -133,6 +134,36 @@ app.post('/excluir-venda', express.json(), (req, res) => {
         res.json({ success: true });
     } else {
         res.json({ success: false });
+    }
+});
+
+// NOVA ROTA: Define exatamente de quem é a vez, sem precisar pular um por um
+app.post('/definir-vez', express.json(), (req, res) => {
+    const { vendedorEscolhido } = req.body;
+    
+    const agora = new Date();
+    const horaReal = parseInt(agora.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit" }));
+    let chaveEscala = (horaReal >= 11 && horaReal < 17) ? "11" : horaReal.toString().padStart(2, '0');
+    
+    if (!escala[chaveEscala]) chaveEscala = "11";
+    let vendedores = escala[chaveEscala];
+
+    // Verifica se o vendedor existe na escala atual
+    const indexAlvo = vendedores.indexOf(vendedorEscolhido);
+
+    if (indexAlvo !== -1) {
+        // Reorganiza a fila colocando o vendedor escolhido como o primeiro (index 0)
+        vendedores = [...vendedores.slice(indexAlvo), ...vendedores.slice(0, indexAlvo)];
+        
+        escala[chaveEscala] = vendedores;
+        salvarEscala(escala);
+        
+        indiceFila = 0;
+        salvarIndice(0);
+        
+        res.json({ success: true, novaLista: vendedores });
+    } else {
+        res.json({ success: false, message: "Vendedor não encontrado na escala atual." });
     }
 });
 
