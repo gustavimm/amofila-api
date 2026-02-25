@@ -142,6 +142,23 @@ app.post('/excluir-venda', express.json(), (req, res) => {
     }
 });
 
+// Rota para resetar tudo para o estado inicial
+app.get('/reset-geral', (req, res) => {
+    // 1. Volta o índice para o começo
+    indiceFila = 0;
+    salvarIndice(0);
+
+    // 2. Restaura a ordem original da escala (ajuste os nomes conforme sua regra atual)
+    escala["08"] = ["Amanda", "Ana Carolina"];
+    escala["09"] = ["Gustavo", "Lavinia"];
+    escala["10"] = ["Tifani"];
+    escala["11"] = ["Amanda", "Ana Carolina", "Lavinia", "Gustavo", "Tifani"];
+    escala["17"] = ["Lavinia", "Tifani", "Gustavo"];
+    escala["18"] = ["Amanda"];
+
+    res.send("<h1>🔄 Sistema resetado com sucesso!</h1><p>Pode fechar esta aba e dar F5 no painel.</p>");
+});
+
 app.listen(PORT, () => {
     console.log(`🚀 AmoFila rodando em http://localhost:${PORT}`);
 });
