@@ -14,11 +14,17 @@ body {
     /* Gradiente sutil e escuro para dar profundidade */
     background: linear-gradient(135deg, var(--fundo-principal) 0%, #1a1a1a 100%);
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    color: var(--texto-branco); /* Texto base branco */
-    padding-top: 40px; /* Adiciona uma margem de segurança no topo */
+    flex-direction: column;
+
+    /* NÃO use 'center' ou 'space-between' na vertical */
+    justify-content: flex-start; /* Alinha tudo ao topo da página */
+    align-items: center; /* Centraliza horizontalmente */
+
+    min-height: 100vh;
+
+    /* Esse é o segredo: uma margem FIXA no topo */
+    padding-top: 60px;
+    box-sizing: border-box; /* Importante para o padding não quebrar o layout */
 }
 
 #logo-header {
