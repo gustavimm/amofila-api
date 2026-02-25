@@ -30,74 +30,94 @@
 
     <div id="toast">Venda registrada! ✅</div>
 
-    <script>
+   <script>
+    let vendedorAnterior = "";
 
     function mostrarToast(texto) {
-    const toast = document.getElementById("toast");
-    toast.innerText = texto; // Altera o texto do aviso
-    toast.className = "show";
-    setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
-}
-        function proximaVenda(){
-            fetch('/proximo', {method: 'POST'})
-            .then(resposta => resposta.json())
-            .then(dados =>{
-                mostrarToast(); // Chama a mensagem
-                buscarVez(); 
-                mostrarToast("Venda registrada! ✅"); // Passando o texto da venda
-            })
-            .catch(erro => console.error('Erro ao atualizar fila:', erro));
-        }
+        const toast = document.getElementById("toast");
+        toast.innerText = texto;
+        toast.className = "show";
+        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+    }
 
-      let vendedorAnterior = ""; 
+    // Função para atualizar o histórico (FALTAVA ESSA!)
+    function atualizarHistorico() {
+        fetch('/historico')
+            .then(res => res.json())
+            .then(dados => {
+                const lista = document.getElementById('lista-historico');
+                if (lista) { // Verifica se a div do histórico existe
+                    lista.innerHTML = dados.map(venda => 
+                        `<li style="margin-bottom: 8px; border-left: 2px solid var(--verde-neon); padding-left: 10px;">
+                            <span style="color: var(--verde-neon); font-weight: bold;">${venda.nome}</span> 
+                            <span style="font-size: 0.7rem; color: #444;"> às ${venda.hora}</span>
+                        </li>`
+                    ).join('');
+                }
+            })
+            .catch(err => console.error("Erro no histórico:", err));
+    }
+
+    function proximaVenda(){
+        fetch('/proximo', {method: 'POST'})
+        .then(resposta => resposta.json())
+        .then(dados => {
+            if (dados.success) {
+                mostrarToast("Venda registrada! ✅");
+                buscarVez(); 
+            }
+        })
+        .catch(erro => console.error('Erro ao atualizar fila:', erro));
+    }
 
     function buscarVez() {
-    fetch('/vez')
-    .then(resposta => response.json())
-    .then(dados => {
-        const painel = document.getElementById('painel-vez');
+        fetch('/vez')
+        .then(resposta => resposta.json()) // CORRIGIDO: de response para resposta
+        .then(dados => {
+            const painel = document.getElementById('painel-vez');
 
-        // 2. Lógica do Som (Sua lógica está 10/10)
-        if (vendedorAnterior !== "" && vendedorAnterior !== dados.vendedor) {
-            const som = document.getElementById('som-notificacao');
-            som.play().catch(e => console.log("Aguardando interação para tocar som..."));
-        }
-        
-        vendedorAnterior = dados.vendedor; // Atualiza a memória para a próxima volta
+            // Lógica do Som
+            if (vendedorAnterior !== "" && vendedorAnterior !== dados.vendedor) {
+                const som = document.getElementById('som-notificacao');
+                som.play().catch(e => console.log("Aguardando clique para liberar som..."));
+            }
+            
+            vendedorAnterior = dados.vendedor;
 
-        // 3. Atualiza o Log de Vendas
-        atualizarHistorico();
+            atualizarHistorico();
 
-        // 4. Interface e Animação
-        painel.classList.remove('fade-in');
-        void painel.offsetWidth; 
-        painel.classList.add('fade-in');
+            // Animação e Interface
+            painel.classList.remove('fade-in');
+            void painel.offsetWidth; 
+            painel.classList.add('fade-in');
 
-        painel.innerHTML = `
-            <h2>Vez de:</h2>
-            <strong>${dados.vendedor}</strong>
-            <p class="horario-escala">Escala de ${dados.horario}</p>
-        `;
-    })
-    .catch(erro => console.error('Erro ao buscar a vez:', erro));
-}
+            painel.innerHTML = `
+                <h2>Vez de:</h2>
+                <strong>${dados.vendedor}</strong>
+                <p class="horario-escala">Escala de ${dados.horario}</p>
+            `;
+        })
+        .catch(erro => {
+            console.error('Erro ao buscar a vez:', erro);
+            document.getElementById('painel-vez').innerHTML = "<p>Erro na conexão...</p>";
+        });
+    }
 
-        // Inicia a busca e o intervalo de sincronização
-        buscarVez();
-        setInterval(buscarVez, 5000);
+    function reordenarFila() {
+        fetch('/reordenar', { method: 'POST' })
+        .then(res => res.json())
+        .then(dados => {
+            if (dados.success) {
+                buscarVez();
+                mostrarToast("Ordem alterada! 🔄");
+            }
+        })
+        .catch(err => console.error("Erro ao reordenar:", err));
+    }
 
-        function reordenarFila() {
-    fetch('/reordenar', { method: 'POST' })
-    .then(res => res.json())
-    .then(dados => {
-        if (dados.success) {
-            buscarVez(); // Atualiza a tela com o novo primeiro
-            mostrarToast(); // Dá o feedback visual
-            mostrarToast("Ordem alterada! 🔄"); // Passamos o texto da troca
-        }
-    })
-    .catch(err => console.error("Erro ao reordenar:", err));
-}
-    </script>
+    // Inicialização
+    buscarVez();
+    setInterval(buscarVez, 5000);
+</script>
 </body>
 </html>
