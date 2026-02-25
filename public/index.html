@@ -20,33 +20,37 @@
                 <p>Sincronizando fila...</p>
             </div>
 
-          <div style="margin-top: 20px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid #333;">
-                <label style="font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px;">Forçar vez para:</label>
-                <div style="display: flex; gap: 5px; margin-top: 5px;">
-                    <select id="select-vendedor" style="flex: 1; padding: 8px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444; font-family: 'Inter', sans-serif;">
-                        <option value="">Carregando...</option>
-                    </select>
-                    <button onclick="definirVezDireto()" style="width: auto; padding: 8px 15px; background: #444; font-size: 0.8rem; margin-top: 0;">OK</button>
+            <div style="margin-top: 20px;">
+                <button onclick="abrirConfigOrdem()" style="background:none; border: 1px solid #444; color:#888; padding:10px; border-radius:8px; cursor:pointer; font-size:0.8rem; width: 100%; transition: 0.2s;">
+                    ⚙️ DEFINIR ORDEM EXATA DA FILA
+                </button>
+
+                <div id="painel-ordem" style="display: none; margin-top: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid #444; text-align: left;">
+                    <label style="font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px;">Organize a fila (Use as setas):</label>
+                    <ul id="lista-ordem-editavel" style="list-style: none; padding: 0; margin: 10px 0;">
+                        </ul>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="salvarOrdemExata()" style="flex: 1; background: var(--verde-neon); color: #000; padding: 10px; border-radius: 6px; font-weight: bold; border: none; cursor: pointer;">✅ SALVAR</button>
+                        <button onclick="fecharConfigOrdem()" style="flex: 1; background: #333; color: #fff; padding: 10px; border-radius: 6px; border: none; cursor: pointer;">❌ CANCELAR</button>
+                    </div>
                 </div>
             </div>
             
-            <button onclick="proximaVenda()">PEGUEI VENDA!</button>
+            <button onclick="proximaVenda()" style="margin-top: 20px;">PEGUEI VENDA!</button>
         </div>
 
         <div id="log-secao" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 15px; text-align: left;">
-    <h3 style="font-size: 0.7rem; color: #555; letter-spacing: 1.5px; margin-bottom: 10px; text-transform: uppercase;">
-        Últimas Vendas
-    </h3>
-    <div style="max-height: 250px; overflow-y: auto; padding-right: 5px;" id="scroll-log">
-        <ul id="lista-historico" style="list-style: none; padding: 0; margin: 0;">
-            </ul>
-    </div>
-</div>
+            <h3 style="font-size: 0.7rem; color: #555; letter-spacing: 1.5px; margin-bottom: 10px; text-transform: uppercase;">Últimas Vendas</h3>
+            <div style="max-height: 250px; overflow-y: auto; padding-right: 5px;" id="scroll-log">
+                <ul id="lista-historico" style="list-style: none; padding: 0; margin: 0;"></ul>
+            </div>
+        </div>
 
-    <div id="toast">Venda registrada! ✅</div>
+        <div id="toast">Venda registrada! ✅</div>
 
     <script>
         let vendedorAnterior = "";
+        let filaEditavel = []; // Variável para controlar a edição da fila
 
         function mostrarToast(texto) {
             const toast = document.getElementById("toast");
@@ -55,31 +59,28 @@
             setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
         }
 
-function atualizarHistorico() {
-    fetch('/historico')
-        .then(res => res.json())
-        .then(dados => {
-            const lista = document.getElementById('lista-historico');
-            if (lista) {
-                lista.innerHTML = dados.map((venda, index) => `
-                    <li style="margin-bottom: 8px; padding: 8px 12px; background: rgba(255, 255, 255, 0.02); border-left: 3px solid var(--verde-neon); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                        <div style="display: flex; flex-direction: column;">
-                            <span style="color: var(--verde-neon); font-weight: bold; font-size: 0.85rem;">${venda.nome}</span>
-                            <span style="color: #555; font-size: 0.65rem;">${venda.hora}</span>
-                        </div>
-                        
-                        <button onclick="excluirVenda(${index})" 
-                                style="width: 26px; height: 26px; background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; border-radius: 4px; display: flex; justify-content: center; align-items: center; color: #ff4444; cursor: pointer; font-size: 1.1rem; line-height: 1; transition: all 0.2s; margin-left: 10px; margin-top: -6px;"
-                                onmouseover="this.style.background='#ff4444'; this.style.color='#000'" 
-                                onmouseout="this.style.background='rgba(255, 68, 68, 0.1)'; this.style.color='#ff4444'">
-                            &times;
-                        </button>
-                    </li>
-                `).join('');
-            }
-        })
-        .catch(err => console.error("Erro no log:", err));
-}
+        function atualizarHistorico() {
+            fetch('/historico')
+                .then(res => res.json())
+                .then(dados => {
+                    const lista = document.getElementById('lista-historico');
+                    if (lista) {
+                        lista.innerHTML = dados.map((venda, index) => `
+                            <li style="margin-bottom: 8px; padding: 8px 12px; background: rgba(255, 255, 255, 0.02); border-left: 3px solid var(--verde-neon); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="color: var(--verde-neon); font-weight: bold; font-size: 0.85rem;">${venda.nome}</span>
+                                    <span style="color: #555; font-size: 0.65rem;">${venda.hora}</span>
+                                </div>
+                                <button onclick="excluirVenda(${index})" style="width: 26px; height: 26px; background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; border-radius: 4px; display: flex; justify-content: center; align-items: center; color: #ff4444; cursor: pointer; font-size: 1.1rem; line-height: 1; transition: all 0.2s; margin-left: 10px; margin-top: -6px;" onmouseover="this.style.background='#ff4444'; this.style.color='#000'" onmouseout="this.style.background='rgba(255, 68, 68, 0.1)'; this.style.color='#ff4444'">
+                                    &times;
+                                </button>
+                            </li>
+                        `).join('');
+                    }
+                })
+                .catch(err => console.error("Erro no log:", err));
+        }
+
         function proximaVenda(){
             fetch('/proximo', {method: 'POST'})
             .then(resposta => resposta.json())
@@ -92,7 +93,7 @@ function atualizarHistorico() {
             .catch(erro => console.error('Erro ao atualizar fila:', erro));
         }
 
-       function buscarVez() {
+        function buscarVez() {
             fetch('/vez')
             .then(resposta => resposta.json())
             .then(dados => {
@@ -106,12 +107,13 @@ function atualizarHistorico() {
                 vendedorAnterior = dados.vendedor;
                 atualizarHistorico();
 
-                // NOVO: Preenche a caixinha de seleção com os nomes do horário
-                const select = document.getElementById('select-vendedor');
+                // SALVA A FILA ATUAL PARA EDIÇÃO
                 if (dados.filaAtual) {
-                    select.innerHTML = dados.filaAtual.map(nome => 
-                        `<option value="${nome}">${nome}</option>`
-                    ).join('');
+                    // Só atualiza a fila editável se o painel de configuração estiver fechado
+                    // para não resetar o que o usuário está arrumando
+                    if(document.getElementById('painel-ordem').style.display === 'none') {
+                        filaEditavel = [...dados.filaAtual];
+                    }
                 }
 
                 painel.classList.remove('fade-in');
@@ -126,58 +128,96 @@ function atualizarHistorico() {
             })
             .catch(erro => console.error('Erro ao buscar a vez:', erro));
         }
-       function reordenarFila() {
-    // Adiciona essa trava de segurança
-    if (confirm("Você realmente deseja pular o início da fila ou trocar a ordem?")) {
-        fetch('/reordenar', { method: 'POST' })
-        .then(res => res.json())
-        .then(dados => {
-            if (dados.success) {
-                buscarVez();
-                mostrarToast("Ordem alterada! 🔄");
-            }
-        })
-        .catch(err => console.error("Erro ao reordenar:", err));
-    }
-}
+
         function excluirVenda(index) {
             if (confirm("Deseja remover este registro do histórico?")) {
-        fetch('/excluir-venda', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ index: index })
-        })
-        .then(res => res.json())
-        .then(dados => {
-            if (dados.success) {
-                atualizarHistorico(); // Atualiza a lista na hora
-                mostrarToast("Registro removido! 🗑️");
-            }
-        })
-        .catch(err => console.error("Erro ao excluir:", err));
-    }
-}
-
-        function definirVezDireto() {
-            const select = document.getElementById('select-vendedor');
-            const nomeEscolhido = select.value;
-
-            if (!nomeEscolhido) return;
-
-            if (confirm(`Tem certeza que deseja passar a vez diretamente para ${nomeEscolhido}?`)) {
-                fetch('/definir-vez', {
+                fetch('/excluir-venda', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ vendedorEscolhido: nomeEscolhido })
+                    body: JSON.stringify({ index: index })
+                })
+                .then(res => res.json())
+                .then(dados => {
+                    if (dados.success) {
+                        atualizarHistorico(); 
+                        mostrarToast("Registro removido! 🗑️");
+                    }
+                })
+                .catch(err => console.error("Erro ao excluir:", err));
+            }
+        }
+
+        // --- FUNÇÕES DA NOVA INTERFACE DE CONFIGURAÇÃO DE ORDEM ---
+
+        function abrirConfigOrdem() {
+            // Primeiro atualizamos a fila editável para garantir que pegamos a ordem do servidor
+            // Mas, como o array que vem do servidor nem sempre tem quem está na tela como o primeiro
+            // (devido ao cálculo do módulo), nós precisamos reorganizar o array antes de editar.
+            
+            fetch('/vez')
+            .then(res => res.json())
+            .then(dados => {
+                if(dados.filaAtual) {
+                    const indexAtual = dados.filaAtual.indexOf(dados.vendedor);
+                    if(indexAtual !== -1) {
+                         // Reorganiza para o vendedor atual ser o topo da lista
+                         filaEditavel = [...dados.filaAtual.slice(indexAtual), ...dados.filaAtual.slice(0, indexAtual)];
+                    } else {
+                         filaEditavel = [...dados.filaAtual];
+                    }
+                    document.getElementById('painel-ordem').style.display = 'block';
+                    renderizarListaEdicao();
+                }
+            });
+        }
+
+        function fecharConfigOrdem() {
+            document.getElementById('painel-ordem').style.display = 'none';
+        }
+
+        function renderizarListaEdicao() {
+            const ul = document.getElementById('lista-ordem-editavel');
+            ul.innerHTML = filaEditavel.map((nome, index) => `
+                <li style="display: flex; justify-content: space-between; align-items: center; background: #222; margin-bottom: 5px; padding: 8px 12px; border-radius: 4px; border: 1px solid #333;">
+                    <span style="color: #fff; font-size: 0.85rem;"><strong>${index + 1}º</strong> - ${nome}</span>
+                    <div>
+                        <button onclick="moverCima(${index})" style="background: none; border: none; font-size: 1.2rem; cursor: ${index === 0 ? 'not-allowed' : 'pointer'}; opacity: ${index === 0 ? '0.3' : '1'};">🔼</button>
+                        <button onclick="moverBaixo(${index})" style="background: none; border: none; font-size: 1.2rem; cursor: ${index === filaEditavel.length - 1 ? 'not-allowed' : 'pointer'}; opacity: ${index === filaEditavel.length - 1 ? '0.3' : '1'};">🔽</button>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        function moverCima(index) {
+            if (index > 0) {
+                [filaEditavel[index - 1], filaEditavel[index]] = [filaEditavel[index], filaEditavel[index - 1]];
+                renderizarListaEdicao();
+            }
+        }
+
+        function moverBaixo(index) {
+            if (index < filaEditavel.length - 1) {
+                [filaEditavel[index + 1], filaEditavel[index]] = [filaEditavel[index], filaEditavel[index + 1]];
+                renderizarListaEdicao();
+            }
+        }
+
+        function salvarOrdemExata() {
+            if(confirm("Confirmar esta nova ordem para a operação de vendas?")) {
+                fetch('/salvar-ordem-exata', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ novaOrdem: filaEditavel })
                 })
                 .then(res => res.json())
                 .then(dados => {
                     if (dados.success) {
                         buscarVez();
-                        mostrarToast(`Vez alterada para ${nomeEscolhido}! 🔄`);
+                        fecharConfigOrdem();
+                        mostrarToast("Fila organizada com sucesso! ✅");
                     }
                 })
-                .catch(err => console.error("Erro ao definir vez:", err));
+                .catch(err => console.error("Erro ao salvar ordem exata:", err));
             }
         }
 
