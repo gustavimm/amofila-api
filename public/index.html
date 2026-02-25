@@ -27,14 +27,15 @@
             <button onclick="proximaVenda()">PEGUEI VENDA!</button>
         </div>
 
-           <div id="log-secao" style="margin-top: 30px; border-top: 1px solid #333; padding-top: 20px; text-align: left;">
-        <h3 style="font-size: 0.7rem; color: #555; letter-spacing: 1.5px; margin-bottom: 15px; text-transform: uppercase;">
-            Últimas Vendas
-        </h3>
-        <div style="max-height: 200px; overflow-y: auto; padding-right: 5px;" id="container-log">
-            <ul id="lista-historico" style="list-style: none; padding: 0; margin: 0;"></ul>
-        </div>
+        <div id="log-secao" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 15px; text-align: left;">
+    <h3 style="font-size: 0.7rem; color: #555; letter-spacing: 1.5px; margin-bottom: 10px; text-transform: uppercase;">
+        Últimas Vendas
+    </h3>
+    <div style="max-height: 250px; overflow-y: auto; padding-right: 5px;" id="scroll-log">
+        <ul id="lista-historico" style="list-style: none; padding: 0; margin: 0;">
+            </ul>
     </div>
+</div>
 
     <div id="toast">Venda registrada! ✅</div>
 
@@ -48,21 +49,20 @@
             setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
         }
 
-   function atualizarHistorico() {
+  function atualizarHistorico() {
     fetch('/historico')
         .then(res => res.json())
         .then(dados => {
             const lista = document.getElementById('lista-historico');
             if (lista) {
                 lista.innerHTML = dados.map((venda, index) => `
-                    <li style="margin-bottom: 8px; padding: 8px; background: rgba(255, 255, 255, 0.03); border-left: 2px solid var(--verde-neon); border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
-                        <div style="line-height: 1.2;">
-                            <span style="color: var(--verde-neon); font-weight: bold; font-size: 0.8rem;">${venda.nome}</span>
-                            <br>
-                            <span style="color: #444; font-size: 0.65rem;">${venda.hora}</span>
+                    <li style="margin-bottom: 8px; padding: 8px 12px; background: rgba(255, 255, 255, 0.02); border-left: 3px solid var(--verde-neon); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="color: var(--verde-neon); font-weight: bold; font-size: 0.85rem;">${venda.nome}</span>
+                            <span style="color: #555; font-size: 0.65rem;">${venda.hora}</span>
                         </div>
                         
-                        <button onclick="excluirVenda(${index})" style="background: none; border: none; cursor: pointer; font-size: 0.9rem; padding: 5px; opacity: 0.6; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+                        <button onclick="excluirVenda(${index})" style="background: none; border: none; cursor: pointer; font-size: 0.85rem; padding: 5px; opacity: 0.5; color: #ff4444; transition: 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'">
                             🗑️
                         </button>
                     </li>
