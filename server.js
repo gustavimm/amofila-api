@@ -167,6 +167,27 @@ app.post('/definir-vez', express.json(), (req, res) => {
     }
 });
 
+// NOVA ROTA: Salva a ordem exata da fila definida pelo usuário
+app.post('/salvar-ordem-exata', express.json(), (req, res) => {
+    const { novaOrdem } = req.body;
+    
+    const agora = new Date();
+    const horaReal = parseInt(agora.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit" }));
+    let chaveEscala = (horaReal >= 11 && horaReal < 17) ? "11" : horaReal.toString().padStart(2, '0');
+    
+    if (!escala[chaveEscala]) chaveEscala = "11";
+    
+    // Substitui a escala atual pela nova ordem definida no painel
+    escala[chaveEscala] = novaOrdem;
+    salvarEscala(escala);
+    
+    // Zera o índice para começar rigorosamente pelo 1º da nova lista
+    indiceFila = 0;
+    salvarIndice(0);
+    
+    res.json({ success: true, novaLista: novaOrdem });
+});
+
 app.get('/reset-geral', (req, res) => {
     indiceFila = 0;
     salvarIndice(0);
