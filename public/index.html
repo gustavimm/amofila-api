@@ -20,9 +20,15 @@
                 <p>Sincronizando fila...</p>
             </div>
 
-            <button id="btn-reordenar" onclick="reordenarFila()" style="background:none; border: 1px solid #444; color:#888; margin-top:20px; padding:10px; border-radius:8px; cursor:pointer; font-size:0.8rem; width: 100%;">
-                🔄 TROCAR INÍCIO / PULAR (ALMOÇO)
-            </button>
+          <div style="margin-top: 20px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid #333;">
+                <label style="font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px;">Forçar vez para:</label>
+                <div style="display: flex; gap: 5px; margin-top: 5px;">
+                    <select id="select-vendedor" style="flex: 1; padding: 8px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444; font-family: 'Inter', sans-serif;">
+                        <option value="">Carregando...</option>
+                    </select>
+                    <button onclick="definirVezDireto()" style="width: auto; padding: 8px 15px; background: #444; font-size: 0.8rem; margin-top: 0;">OK</button>
+                </div>
+            </div>
             
             <button onclick="proximaVenda()">PEGUEI VENDA!</button>
         </div>
