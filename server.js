@@ -83,6 +83,27 @@ app.post('/proximo', (req, res) => {
     res.json({ success: true, novoIndice: indiceFila });
 });
 
+// Rota para mover o vendedor atual para o final da fila
+app.post('/reordenar', (req, res) => {
+    const agora = new Date();
+    const horaBrasilia = agora.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", hour12: false });
+    const horaReal = parseInt(horaBrasilia);
+    
+    let chaveEscala = (horaReal >= 11 && horaReal < 17) ? "11" : horaBrasilia;
+    if (!escala[chaveEscala]) chaveEscala = "11";
+
+    const vendedores = escala[chaveEscala];
+
+    if (vendedores.length > 1) {
+        // Pega o primeiro da lista e joga para o final
+        const primeiro = vendedores.shift();
+        vendedores.push(primeiro);
+        res.json({ success: true, novaLista: vendedores });
+    } else {
+        res.json({ success: false, message: "Apenas um vendedor na lista." });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`🚀 AmoFila rodando em http://localhost:${PORT}`);
 });
