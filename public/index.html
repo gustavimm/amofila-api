@@ -15,117 +15,112 @@
         <img src="logo-amo.png" alt="AMO INTERNET" id="logo-header">
     
         <div id="card-fila">
-    <h1>PAINEL DE VENDAS</h1>
-    
-    <div id="painel-vez">
-        <p>Sincronizando fila...</p>
-    </div>
+            <h1>PAINEL DE VENDAS</h1>
+            <div id="painel-vez">
+                <p>Sincronizando fila...</p>
+            </div>
 
-    <button id="btn-reordenar" onclick="reordenarFila()" style="background:none; border: 1px solid #444; color:#888; margin-top:20px; padding:10px; border-radius:8px; cursor:pointer; font-size:0.8rem; width: 100%;">
-        🔄 TROCAR INÍCIO / PULAR (ALMOÇO)
-    </button>
-    
-    <button onclick="proximaVenda()">PEGUEI VENDA!</button>
-</div>
+            <button id="btn-reordenar" onclick="reordenarFila()" style="background:none; border: 1px solid #444; color:#888; margin-top:20px; padding:10px; border-radius:8px; cursor:pointer; font-size:0.8rem; width: 100%;">
+                🔄 TROCAR INÍCIO / PULAR (ALMOÇO)
+            </button>
+            
+            <button onclick="proximaVenda()">PEGUEI VENDA!</button>
+        </div>
 
         <div id="log-secao" style="margin-top: 30px; border-top: 1px solid #333; padding-top: 20px; text-align: left;">
-    <h3 style="font-size: 0.7rem; color: #555; letter-spacing: 1.5px; margin-bottom: 15px; text-transform: uppercase;">
-        Últimas Vendas
-    </h3>
-    <ul id="lista-historico" style="list-style: none; padding: 0; margin: 0;">
-        </ul>
-</div>
+            <h3 style="font-size: 0.7rem; color: #555; letter-spacing: 1.5px; margin-bottom: 15px; text-transform: uppercase;">
+                Últimas Vendas
+            </h3>
+            <ul id="lista-historico" style="list-style: none; padding: 0; margin: 0;">
+                </ul>
+        </div>
+    </div>
 
     <div id="toast">Venda registrada! ✅</div>
 
-   <script>
-    let vendedorAnterior = "";
+    <script>
+        let vendedorAnterior = "";
 
-    function mostrarToast(texto) {
-        const toast = document.getElementById("toast");
-        toast.innerText = texto;
-        toast.className = "show";
-        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
-    }
+        function mostrarToast(texto) {
+            const toast = document.getElementById("toast");
+            toast.innerText = texto;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        }
 
-    // Função para atualizar o histórico (FALTAVA ESSA!)
-    function atualizarHistorico() {
-        fetch('/historico')
-            .then(res => res.json())
+        function atualizarHistorico() {
+            fetch('/historico')
+                .then(res => res.json())
+                .then(dados => {
+                    const lista = document.getElementById('lista-historico');
+                    if (lista) {
+                        lista.innerHTML = dados.map(venda => `
+                            <li style="margin-bottom: 10px; padding: 10px; background: rgba(255, 255, 255, 0.03); border-left: 3px solid var(--verde-neon); border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: var(--verde-neon); font-weight: bold; font-size: 0.9rem;">${venda.nome}</span>
+                                <span style="color: #444; font-size: 0.75rem;"> às ${venda.hora}</span>
+                            </li>
+                        `).join('');
+                    }
+                })
+                .catch(err => console.error("Erro ao carregar histórico:", err));
+        }
+
+        function proximaVenda(){
+            fetch('/proximo', {method: 'POST'})
+            .then(resposta => resposta.json())
             .then(dados => {
-                const lista = document.getElementById('lista-historico');
-                if (lista) { // Verifica se a div do histórico existe
-                    lista.innerHTML = dados.map(venda => 
-                        `<li style="margin-bottom: 8px; border-left: 2px solid var(--verde-neon); padding-left: 10px;">
-                            <span style="color: var(--verde-neon); font-weight: bold;">${venda.nome}</span> 
-                            <span style="font-size: 0.7rem; color: #444;"> às ${venda.hora}</span>
-                        </li>`
-                    ).join('');
+                if (dados.success) {
+                    mostrarToast("Venda registrada! ✅");
+                    buscarVez(); 
                 }
             })
-            .catch(err => console.error("Erro no histórico:", err));
-    }
+            .catch(erro => console.error('Erro ao atualizar fila:', erro));
+        }
 
-    function proximaVenda(){
-        fetch('/proximo', {method: 'POST'})
-        .then(resposta => resposta.json())
-        .then(dados => {
-            if (dados.success) {
-                mostrarToast("Venda registrada! ✅");
-                buscarVez(); 
-            }
-        })
-        .catch(erro => console.error('Erro ao atualizar fila:', erro));
-    }
+        function buscarVez() {
+            fetch('/vez')
+            .then(resposta => resposta.json())
+            .then(dados => {
+                const painel = document.getElementById('painel-vez');
 
-    function buscarVez() {
-        fetch('/vez')
-        .then(resposta => resposta.json()) // CORRIGIDO: de response para resposta
-        .then(dados => {
-            const painel = document.getElementById('painel-vez');
+                if (vendedorAnterior !== "" && vendedorAnterior !== dados.vendedor) {
+                    const som = document.getElementById('som-notificacao');
+                    som.play().catch(e => console.log("Aguardando clique para liberar som..."));
+                }
+                
+                vendedorAnterior = dados.vendedor;
+                atualizarHistorico();
 
-            // Lógica do Som
-            if (vendedorAnterior !== "" && vendedorAnterior !== dados.vendedor) {
-                const som = document.getElementById('som-notificacao');
-                som.play().catch(e => console.log("Aguardando clique para liberar som..."));
-            }
-            
-            vendedorAnterior = dados.vendedor;
+                painel.classList.remove('fade-in');
+                void painel.offsetWidth; 
+                painel.classList.add('fade-in');
 
-            atualizarHistorico();
+                painel.innerHTML = `
+                    <h2>Vez de:</h2>
+                    <strong>${dados.vendedor}</strong>
+                    <p class="horario-escala">Escala de ${dados.horario}</p>
+                `;
+            })
+            .catch(erro => {
+                console.error('Erro ao buscar a vez:', erro);
+            });
+        }
 
-            // Animação e Interface
-            painel.classList.remove('fade-in');
-            void painel.offsetWidth; 
-            painel.classList.add('fade-in');
+        function reordenarFila() {
+            fetch('/reordenar', { method: 'POST' })
+            .then(res => res.json())
+            .then(dados => {
+                if (dados.success) {
+                    buscarVez();
+                    mostrarToast("Ordem alterada! 🔄");
+                }
+            })
+            .catch(err => console.error("Erro ao reordenar:", err));
+        }
 
-            painel.innerHTML = `
-                <h2>Vez de:</h2>
-                <strong>${dados.vendedor}</strong>
-                <p class="horario-escala">Escala de ${dados.horario}</p>
-            `;
-        })
-        .catch(erro => {
-            console.error('Erro ao buscar a vez:', erro);
-            document.getElementById('painel-vez').innerHTML = "<p>Erro na conexão...</p>";
-        });
-    }
-
-    function reordenarFila() {
-        fetch('/reordenar', { method: 'POST' })
-        .then(res => res.json())
-        .then(dados => {
-            if (dados.success) {
-                buscarVez();
-                mostrarToast("Ordem alterada! 🔄");
-            }
-        })
-        .catch(err => console.error("Erro ao reordenar:", err));
-    }
-
-    // Inicialização
-    buscarVez();
-    setInterval(buscarVez, 5000);
-</script>
+        // Inicialização
+        buscarVez();
+        setInterval(buscarVez, 5000);
+    </script>
 </body>
 </html>
