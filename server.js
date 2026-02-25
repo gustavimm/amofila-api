@@ -92,6 +92,25 @@ app.post('/proximo', (req, res) => {
     res.json({ success: true });
 });
 
+// NOVA ROTA: Botão de Pânico (Desfazer última venda)
+app.post('/voltar-vez', (req, res) => {
+    if (indiceFila > 0) {
+        // 1. Volta o ponteiro uma casa para trás
+        indiceFila--;
+        salvarIndice(indiceFila);
+
+        // 2. Remove o último registro do histórico (que é sempre o índice 0 por causa do unshift)
+        if (historicoVendas.length > 0) {
+            historicoVendas.shift();
+        }
+
+        res.json({ success: true });
+    } else {
+        // Trava de segurança para não deixar o índice ficar negativo
+        res.json({ success: false, message: "Já estamos no início da fila." });
+    }
+});
+
 
 app.post('/reordenar', (req, res) => {
     const agora = new Date();
