@@ -123,6 +123,20 @@ button:hover {
     z-index: 100;
 }
 
+/* Personaliza a barra de rolagem no Chrome/Edge/Safari */
+#scroll-log::-webkit-scrollbar {
+    width: 5px;
+}
+
+#scroll-log::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+#scroll-log::-webkit-scrollbar-thumb {
+    background: var(--verde-neon);
+    border-radius: 10px;
+}
+
 #toast.show {
     visibility: visible;
     animation: fadein-toast 0.5s forwards, fadeout-toast 1.5s 2.5s forwards;
