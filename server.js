@@ -10,7 +10,7 @@ app.use(express.static('public'));
 const escala = {
     // Manhã
     "08": ["Amanda", "Ana Carolina"],
-    "09": ["Lavinia", "Gustavo"],
+    "09": ["Gustavo", "Lavinia"],
     "10": ["Tifani"],
     
     // Todos juntos (11:00 às 16:59)
