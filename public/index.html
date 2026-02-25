@@ -97,6 +97,22 @@
             .catch(erro => console.error('Erro ao atualizar fila:', erro));
         }
 
+        function voltarVez() {
+            if (confirm("🚨 TEM CERTEZA? Isso vai apagar a última venda do histórico e devolver a vez para o vendedor anterior.")) {
+                fetch('/voltar-vez', { method: 'POST' })
+                .then(res => res.json())
+                .then(dados => {
+                    if (dados.success) {
+                        mostrarToast("Vez desfeita com sucesso! ⏪");
+                        buscarVez(); // Atualiza a tela para todo mundo
+                    } else {
+                        alert("Não é possível voltar mais do que isso.");
+                    }
+                })
+                .catch(erro => console.error('Erro ao voltar vez:', erro));
+            }
+        }
+
         function buscarVez() {
             fetch('/vez')
             .then(resposta => resposta.json())
