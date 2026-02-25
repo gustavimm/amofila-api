@@ -118,6 +118,24 @@
             .catch(err => console.error("Erro ao reordenar:", err));
         }
 
+        function excluirVenda(index) {
+            if (confirm("Deseja remover este registro do histórico?")) {
+        fetch('/excluir-venda', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ index: index })
+        })
+        .then(res => res.json())
+        .then(dados => {
+            if (dados.success) {
+                atualizarHistorico(); // Atualiza a lista na hora
+                mostrarToast("Registro removido! 🗑️");
+            }
+        })
+        .catch(err => console.error("Erro ao excluir:", err));
+    }
+}
+
         // Inicialização
         buscarVez();
         setInterval(buscarVez, 5000);
