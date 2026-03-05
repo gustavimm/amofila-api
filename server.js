@@ -24,12 +24,14 @@ function salvarIndice(novoValor) {
 // Carrega a escala (Padrão ou a Customizada que você salvou)
 function carregarEscala() {
     const escalaPadrao = {
-        "08": ["Amanda", "Ana Carolina"],
-        "09": ["Gustavo", "Lavinia"],
+       const escalaPadrao = {
+        "08": ["Amanda", "Ana Carolina", "Lucas"],
+        "09": ["Gustavo", "Lavinia", "Anna Clara"],
         "10": ["Tifani"],
-        "11": ["Amanda", "Ana Carolina", "Gustavo", "Lavinia", "Tifani"],
-        "17": ["Gustavo", "Tifani", "Lavinia"],
+        "11": ["Amanda", "Ana Carolina", "Gustavo", "Lavinia", "Tifani", "Lucas", "Anna Clara"],
+        "17": ["Gustavo", "Tifani", "Lavinia"], 
         "18": ["Amanda"]
+    };
     };
     try {
         if (fs.existsSync('escala_custom.json')) {
