@@ -22,16 +22,15 @@ function salvarIndice(novoValor) {
 }
 
 // Carrega a escala (Padrão ou a Customizada que você salvou)
+// Carrega a escala (Padrão ou a Customizada que você salvou)
 function carregarEscala() {
     const escalaPadrao = {
-       const escalaPadrao = {
         "08": ["Amanda", "Ana Carolina", "Lucas"],
         "09": ["Gustavo", "Lavinia", "Anna Clara"],
         "10": ["Tifani"],
         "11": ["Amanda", "Ana Carolina", "Gustavo", "Lavinia", "Tifani", "Lucas", "Anna Clara"],
-        "17": ["Gustavo", "Tifani", "Lavinia"], 
+        "17": ["Gustavo", "Tifani", "Lavinia"],
         "18": ["Amanda"]
-    };
     };
     try {
         if (fs.existsSync('escala_custom.json')) {
@@ -41,7 +40,6 @@ function carregarEscala() {
     } catch (err) { console.error("Erro ao carregar escala:", err); }
     return escalaPadrao;
 }
-
 function salvarEscala(novaEscala) {
     fs.writeFileSync('escala_custom.json', JSON.stringify(novaEscala, null, 2), 'utf-8');
 }
