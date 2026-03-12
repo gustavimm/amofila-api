@@ -27,7 +27,7 @@ function carregarEscala() {
         "09": ["Lavinia", "Anna Clara"],
         "10": ["Gustavo", "Tifani"],
         "11": ["Amanda", "Ana Carolina", "Gustavo", "Lavinia", "Tifani", "Lucas", "Anna Clara"],
-        "17": ["Gustavo", "Tifani", "Lavinia"],
+        "17": ["Gustavo", "Tifani", "Lavinia", "Anna Clara"],
         "18": ["Amanda"]
     };
     try {
