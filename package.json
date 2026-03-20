@@ -19,3 +19,21 @@
     "nodemon": "^3.1.11"
   }
 }
+
+{
+  "name": "amofila-api",
+  "version": "1.0.0",
+  "description": "API de gerenciamento de fila de vendas",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.4"
+  }
+}
