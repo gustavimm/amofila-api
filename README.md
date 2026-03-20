@@ -76,6 +76,6 @@ http://localhost:3000
 - `POST /salvar-ordem-exata`: Sobrescreve a ordem da matriz via UI de administração.
 - `GET /reset-geral`: Hard reset do sistema (exclusão de backups e retorno à escala padrão).
 
----
+
 *Desenvolvido com ☕ e foco em Qualidade de Software por Gustavo.*
-```
+
