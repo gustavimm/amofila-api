@@ -198,6 +198,10 @@ app.get('/reset-geral', (req, res) => {
     res.send("<h1>🔄 Sistema resetado com sucesso!</h1><p>A escala voltou ao padrão e o índice foi para zero.</p>");
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 AmoFila rodando em http://localhost:${PORT}`);
-});
+// Exporta o app para o Jest conseguir testar sem conflito de portas
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`🚀 AmoFila rodando em http://localhost:${PORT}`);
+    });
+}
+module.exports = app;;
