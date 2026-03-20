@@ -1,38 +1,22 @@
 {
   "name": "amofila-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "API de gerenciamento de fila de vendas",
+  "main": "server.js",
   "scripts": {
-   "test": "echo \"Error: no test specified\" && exit 1",
-   "dev": "nodemon server.js",
-   "start": "node server.js"
+    "test": "jest",
+    "dev": "nodemon server.js",
+    "start": "node server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Gustavo",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "express": "^5.2.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
-  }
-}
-
-{
-  "name": "amofila-api",
-  "version": "1.0.0",
-  "description": "API de gerenciamento de fila de vendas",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "test": "jest"
-  },
-  "dependencies": {
-    "express": "^4.18.2"
-  },
-  "devDependencies": {
+    "nodemon": "^3.1.11",
     "jest": "^29.7.0",
     "supertest": "^6.3.4"
   }
