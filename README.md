@@ -1,7 +1,8 @@
+
 # 🚀 AmoFila - Sistema de Gerenciamento de Fila de Vendas
 
 <div align="center">
-  <img width="1336" height="621" alt="image" src="https://github.com/user-attachments/assets/2a862b98-0d2e-4234-9d02-6fd351f47bea" />
+  <img width="1336" height="621" alt="image" src="[https://github.com/user-attachments/assets/2a862b98-0d2e-4234-9d02-6fd351f47bea](https://github.com/user-attachments/assets/2a862b98-0d2e-4234-9d02-6fd351f47bea)" />
 </div>
 
 ## 📌 Sobre o Projeto
@@ -50,4 +51,31 @@ Como o foco deste projeto também engloba garantir a integridade da operação, 
 
 1. Clone o repositório:
 ```bash
-git clone [https://github.com/gustavimm/amofila-api.git](https://github.com/gustavimm/amofila-api.git)
+git clone https://github.com/gustavimm/amofila-api.git
+```
+
+2. Instale as dependências:
+```bash
+npm install
+```
+
+3. Inicie o servidor:
+```bash
+node server.js
+```
+
+4. Acesse no navegador:
+```text
+http://localhost:3000
+```
+
+## 🔄 Rotas da API (Endpoints)
+- `GET /vez`: Retorna o vendedor atual e a matriz da fila do horário.
+- `POST /proximo`: Registra venda e avança a fila.
+- `POST /voltar-vez`: Aciona o rollback da última ação.
+- `POST /salvar-ordem-exata`: Sobrescreve a ordem da matriz via UI de administração.
+- `GET /reset-geral`: Hard reset do sistema (exclusão de backups e retorno à escala padrão).
+
+---
+*Desenvolvido com ☕ e foco em Qualidade de Software por Gustavo.*
+```
