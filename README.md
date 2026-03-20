@@ -2,7 +2,7 @@
 # 🚀 AmoFila - Sistema de Gerenciamento de Fila de Vendas
 
 <div align="center">
-  <img width="1336" height="621" alt="image" src="[https://github.com/user-attachments/assets/2a862b98-0d2e-4234-9d02-6fd351f47bea](https://github.com/user-attachments/assets/2a862b98-0d2e-4234-9d02-6fd351f47bea)" />
+<img width="1332" height="616" alt="image" src="https://github.com/user-attachments/assets/ace2b459-8f82-46fe-91d0-764e1bc30f51" />
 </div>
 
 ## 📌 Sobre o Projeto
