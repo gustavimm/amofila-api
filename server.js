@@ -24,10 +24,10 @@ function carregarEscala() {
     // 🚀 AQUI ESTÃO OS HORÁRIOS NOVOS E CORRIGIDOS
     const escalaPadrao = {
         "08": ["Tifani", "Lavinia", "Lucas"],
-        "09": ["Ana Carolina", "Anna Clara"],
+        "09": ["Ana Carolina"],
         "10": ["Gustavo", "Amanda"],
-        "11": ["Tifani", "Lavinia", "Lucas", "Ana Carolina", "Anna Clara", "Gustavo", "Amanda"],
-        "17": ["Gustavo", "Amanda", "Ana Carolina", "Anna Clara"],
+        "11": ["Tifani", "Lavinia", "Lucas", "Ana Carolina", "Gustavo", "Amanda"],
+        "17": ["Gustavo", "Amanda", "Ana Carolina"],
         "18": ["Amanda", "Gustavo"]
     };
     try {
