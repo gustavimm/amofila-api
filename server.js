@@ -97,7 +97,54 @@ app.post('/reordenar', (req, res) => {
     }
 });
 
-app.get('/historico', (req, res) => { res.json(historicoVendas); });
+let vendedoresAusentes = [];
+
+app.post('/ausente', express.json(), (req, res) => {
+    const { vendedor } = req.body;
+    if (!vendedor) return res.json({ success: false, message: "Vendedor não informado." });
+
+    if (!vendedoresAusentes.includes(vendedor)) {
+        vendedoresAusentes.push(vendedor);
+    }
+
+    // Remove o vendedor de todos os blocos da escala
+    for (const chave in escala) {
+        escala[chave] = escala[chave].filter(v => v !== vendedor);
+    }
+
+    indiceFila = 0;
+    res.json({ success: true, message: `${vendedor} marcado como ausente.`, ausentes: vendedoresAusentes });
+});
+
+app.post('/retornar', express.json(), (req, res) => {
+    const { vendedor } = req.body;
+    if (!vendedor) return res.json({ success: false, message: "Vendedor não informado." });
+
+    vendedoresAusentes = vendedoresAusentes.filter(v => v !== vendedor);
+
+    // Recoloca na escala padrão
+    const escalaPadrao = {
+        "08": ["Isabella", "Gustavo", "Lavinia"],
+        "09": ["Tifani", "Luis", "Amanda"],
+        "10": ["Lucas", "Ana Carolina"],
+        "11": ["Isabella", "Gustavo", "Lavinia", "Tifani", "Luis", "Amanda", "Lucas", "Ana Carolina"],
+        "17": ["Luis", "Tifani", "Ana Carolina", "Lucas", "Amanda"],
+        "18": ["Ana Carolina", "Lucas"]
+    };
+
+    for (const chave in escalaPadrao) {
+        if (escalaPadrao[chave].includes(vendedor) && !escala[chave].includes(vendedor)) {
+            escala[chave].push(vendedor);
+        }
+    }
+
+    indiceFila = 0;
+    res.json({ success: true, message: `${vendedor} retornou à fila.`, ausentes: vendedoresAusentes });
+});
+
+app.get('/ausentes', (req, res) => {
+    res.json({ ausentes: vendedoresAusentes });
+});
 
 app.post('/excluir-venda', express.json(), (req, res) => {
     const { index } = req.body;
