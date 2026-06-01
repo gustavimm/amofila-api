@@ -7,8 +7,9 @@ let indiceFila = 0;
 let ultimoBloco = "";
 
 app.use(express.static('public'));
+app.use(express.json());
 
-// --- 1. ESCALA E PERSISTÊNCIA (Memória) ---
+// --- 1. ESCALA ---
 
 let escala = {
     "08": ["Isabella", "Gustavo", "Lavinia"],
@@ -19,13 +20,14 @@ let escala = {
     "18": ["Ana Carolina", "Lucas"]
 };
 
-// --- 2. ROTAS ---
-
-app.get('/vez', (req, res) => {
+// --- FUNÇÃO CENTRAL: calcula chave e lista de vendedores do momento ---
+// Usada em /vez e /proximo para garantir consistência
+function getEstadoAtual() {
     const agora = new Date();
     const horaBrasilia = agora.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", hour12: false });
     const horaReal = parseInt(horaBrasilia);
-    
+    const horaLog = agora.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
+
     let chaveEscala = "";
     if (horaReal === 8) chaveEscala = "08";
     else if (horaReal === 9) chaveEscala = "09";
@@ -35,13 +37,21 @@ app.get('/vez', (req, res) => {
     else if (horaReal === 18) chaveEscala = "18";
     else chaveEscala = "11";
 
+    const vendedoresAgora = escala[chaveEscala] || escala["11"];
+    const quemEstaNaVez = vendedoresAgora[indiceFila % vendedoresAgora.length];
+
+    return { chaveEscala, vendedoresAgora, quemEstaNaVez, horaBrasilia, horaLog };
+}
+
+// --- 2. ROTAS ---
+
+app.get('/vez', (req, res) => {
+    const { chaveEscala, vendedoresAgora, quemEstaNaVez, horaBrasilia } = getEstadoAtual();
+
     if (ultimoBloco !== "" && ultimoBloco !== chaveEscala) {
         indiceFila = 0;
     }
     ultimoBloco = chaveEscala;
-
-    const vendedoresAgora = escala[chaveEscala] || escala["11"];
-    const quemEstaNaVez = vendedoresAgora[indiceFila % vendedoresAgora.length];
 
     res.json({
         vendedor: quemEstaNaVez,
@@ -51,17 +61,19 @@ app.get('/vez', (req, res) => {
     });
 });
 
-app.post('/proximo', (req, res) => {
-    const agora = new Date();
-    const horaLog = agora.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
-    const horaReal = parseInt(agora.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit" }));
-    
-    let chave = (horaReal >= 11 && horaReal < 17) ? "11" : horaReal.toString().padStart(2, '0');
-    let listaVendedores = escala[chave] || escala["11"];
-    let vendedorQuePegou = listaVendedores[indiceFila % listaVendedores.length];
+app.get('/historico', (req, res) => {
+    res.json(historicoVendas);
+});
 
-    historicoVendas.unshift({ nome: vendedorQuePegou, hora: horaLog });
-    if (historicoVendas.length > 5) historicoVendas.pop();
+app.post('/proximo', (req, res) => {
+    // Usa a mesma função do /vez — garantia de consistência
+    const { vendedoresAgora, quemEstaNaVez, horaLog } = getEstadoAtual();
+
+    // Salva no histórico com o nome correto
+    historicoVendas.unshift({ nome: quemEstaNaVez, hora: horaLog });
+
+    // Limite generoso (20 registros) para não sumir do log
+    if (historicoVendas.length > 20) historicoVendas.pop();
 
     indiceFila++;
     res.json({ success: true });
@@ -78,12 +90,9 @@ app.post('/voltar-vez', (req, res) => {
 });
 
 app.post('/reordenar', (req, res) => {
-    const agora = new Date();
-    const horaReal = parseInt(agora.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit" }));
-    let chaveEscala = (horaReal >= 11 && horaReal < 17) ? "11" : horaReal.toString().padStart(2, '0');
-    if (!escala[chaveEscala]) chaveEscala = "11";
+    const { chaveEscala, vendedoresAgora } = getEstadoAtual();
+    let vendedores = [...vendedoresAgora];
 
-    let vendedores = escala[chaveEscala];
     if (vendedores.length > 1) {
         const indexAtual = indiceFila % vendedores.length;
         vendedores = [...vendedores.slice(indexAtual), ...vendedores.slice(0, indexAtual)];
@@ -99,7 +108,7 @@ app.post('/reordenar', (req, res) => {
 
 let vendedoresAusentes = [];
 
-app.post('/ausente', express.json(), (req, res) => {
+app.post('/ausente', (req, res) => {
     const { vendedor } = req.body;
     if (!vendedor) return res.json({ success: false, message: "Vendedor não informado." });
 
@@ -107,7 +116,6 @@ app.post('/ausente', express.json(), (req, res) => {
         vendedoresAusentes.push(vendedor);
     }
 
-    // Remove o vendedor de todos os blocos da escala
     for (const chave in escala) {
         escala[chave] = escala[chave].filter(v => v !== vendedor);
     }
@@ -116,13 +124,12 @@ app.post('/ausente', express.json(), (req, res) => {
     res.json({ success: true, message: `${vendedor} marcado como ausente.`, ausentes: vendedoresAusentes });
 });
 
-app.post('/retornar', express.json(), (req, res) => {
+app.post('/retornar', (req, res) => {
     const { vendedor } = req.body;
     if (!vendedor) return res.json({ success: false, message: "Vendedor não informado." });
 
     vendedoresAusentes = vendedoresAusentes.filter(v => v !== vendedor);
 
-    // Recoloca na escala padrão
     const escalaPadrao = {
         "08": ["Isabella", "Gustavo", "Lavinia"],
         "09": ["Tifani", "Luis", "Amanda"],
@@ -146,7 +153,7 @@ app.get('/ausentes', (req, res) => {
     res.json({ ausentes: vendedoresAusentes });
 });
 
-app.post('/excluir-venda', express.json(), (req, res) => {
+app.post('/excluir-venda', (req, res) => {
     const { index } = req.body;
     if (index !== undefined && index >= 0 && index < historicoVendas.length) {
         historicoVendas.splice(index, 1);
@@ -156,14 +163,11 @@ app.post('/excluir-venda', express.json(), (req, res) => {
     }
 });
 
-app.post('/definir-vez', express.json(), (req, res) => {
+app.post('/definir-vez', (req, res) => {
     const { vendedorEscolhido } = req.body;
-    const agora = new Date();
-    const horaReal = parseInt(agora.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit" }));
-    let chaveEscala = (horaReal >= 11 && horaReal < 17) ? "11" : horaReal.toString().padStart(2, '0');
-    if (!escala[chaveEscala]) chaveEscala = "11";
+    const { chaveEscala, vendedoresAgora } = getEstadoAtual();
 
-    let vendedores = escala[chaveEscala];
+    let vendedores = [...vendedoresAgora];
     const indexAlvo = vendedores.indexOf(vendedorEscolhido);
     if (indexAlvo !== -1) {
         vendedores = [...vendedores.slice(indexAlvo), ...vendedores.slice(0, indexAlvo)];
@@ -175,12 +179,9 @@ app.post('/definir-vez', express.json(), (req, res) => {
     }
 });
 
-app.post('/salvar-ordem-exata', express.json(), (req, res) => {
+app.post('/salvar-ordem-exata', (req, res) => {
     const { novaOrdem } = req.body;
-    const agora = new Date();
-    const horaReal = parseInt(agora.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit" }));
-    let chaveEscala = (horaReal >= 11 && horaReal < 17) ? "11" : horaReal.toString().padStart(2, '0');
-    if (!escala[chaveEscala]) chaveEscala = "11";
+    const { chaveEscala } = getEstadoAtual();
 
     escala[chaveEscala] = novaOrdem;
     indiceFila = 0;
@@ -190,6 +191,7 @@ app.post('/salvar-ordem-exata', express.json(), (req, res) => {
 app.get('/reset-geral', (req, res) => {
     indiceFila = 0;
     ultimoBloco = "";
+    historicoVendas = [];
     escala = {
         "08": ["Isabella", "Gustavo", "Lavinia"],
         "09": ["Tifani", "Luis", "Amanda"],
