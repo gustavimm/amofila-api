@@ -1,249 +1,1010 @@
 <!DOCTYPE html>
-<html lang="PT-BR">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AMO FILA - Painel Oficial</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMO FILA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:      #080808;
+  --surface:    #101010;
+  --surface2:   #161616;
+  --border:     #1e1e1e;
+  --border2:    #2a2a2a;
+  --green:      #00ff41;
+  --green-dim:  rgba(0,255,65,0.08);
+  --red:        #ff3b3b;
+  --red-dim:    rgba(255,59,59,0.09);
+  --amber:      #ffb800;
+  --amber-dim:  rgba(255,184,0,0.09);
+  --text:       #e0e0e0;
+  --text-mid:   #505050;
+  --text-dim:   #2a2a2a;
+  --mono:       'JetBrains Mono', monospace;
+  --ui:         'Barlow Condensed', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+
+body {
+  min-height: 100vh;
+  background: var(--black);
+  color: var(--text);
+  font-family: var(--ui);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 20px 60px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,255,65,0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,65,0.028) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none; z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.82) 100%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ── WRAPPER ── */
+#wrap {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 560px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 14px;
+  animation: fadeUp 0.5s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── LOGO ── */
+.logo-img {
+  height: 32px;
+  mix-blend-mode: screen;
+  opacity: 0.9;
+  margin-bottom: 4px;
+  filter: drop-shadow(0 0 10px rgba(0,255,65,0.2));
+}
+
+#relogio {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-mid);
+  letter-spacing: 2px;
+  margin-bottom: 2px;
+}
+
+/* ── CARD ── */
+.card {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.card-section {
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--border);
+}
+.card-section:last-child { border-bottom: none; }
+
+/* ── SECTION LABEL ── */
+.sec-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: var(--text-mid);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sec-label::after {
+  content: '';
+  flex: 1; height: 1px;
+  background: var(--border);
+}
+
+/* ── VEZ DE ── */
+#sec-vez {
+  text-align: center;
+  padding: 28px 22px 22px;
+  position: relative;
+}
+#sec-vez::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--green), transparent);
+}
+
+.vez-eyebrow {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 5px;
+  color: var(--text-mid);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+#nome-vez {
+  font-family: var(--mono);
+  font-weight: 800;
+  font-size: clamp(2.2rem, 8vw, 3.4rem);
+  line-height: 1;
+  color: var(--green);
+  letter-spacing: -2px;
+  text-shadow: 0 0 40px rgba(0,255,65,0.3), 0 0 80px rgba(0,255,65,0.1);
+  margin-bottom: 14px;
+}
+
+#nome-vez.trocando { animation: scanSwap 0.3s ease both; }
+
+@keyframes scanSwap {
+  0%   { opacity:1; transform:translateY(0);    filter:blur(0); }
+  40%  { opacity:0; transform:translateY(-8px); filter:blur(4px); }
+  60%  { opacity:0; transform:translateY(8px);  filter:blur(4px); }
+  100% { opacity:1; transform:translateY(0);    filter:blur(0); }
+}
+
+.vez-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+#horario-badge {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-mid);
+  border: 1px solid var(--border2);
+  padding: 4px 10px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  transition: color 0.3s, border-color 0.3s;
+}
+#horario-badge b { color: var(--green); }
+
+.sep-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-dim); }
+
+#cronometro {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--text-mid);
+  transition: color 0.4s;
+}
+#cronometro.urgente { color: var(--amber); }
+#cronometro.critico { color: var(--red); animation: blinkCrono 1s ease infinite; }
+@keyframes blinkCrono { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* ── FILA ATUAL — chips ── */
+#sec-fila { padding: 16px 22px; }
+
+#lista-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.fila-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: 7px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  font-family: var(--ui);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-mid);
+}
+
+.fila-chip.atual {
+  background: var(--green-dim);
+  border-color: rgba(0,255,65,0.25);
+  color: var(--green);
+  font-weight: 700;
+}
+
+.fila-pos-num {
+  font-family: var(--mono);
+  font-size: 9px;
+  opacity: 0.5;
+}
+
+/* ── BOTÕES PRINCIPAIS ── */
+#sec-btns { padding: 16px 22px; display: flex; flex-direction: column; gap: 8px; }
+
+#btn-venda {
+  position: relative;
+  width: 100%; padding: 18px;
+  background: var(--green); color: #000;
+  border: none; border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 0.9rem; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.2s;
+  overflow: hidden;
+}
+#btn-venda::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 45%;
+  background: rgba(255,255,255,0.1);
+  pointer-events: none;
+}
+#btn-venda::after {
+  content: '';
+  position: absolute; inset: -3px;
+  border-radius: 10px;
+  border: 2px solid var(--green);
+  opacity: 0;
+  animation: idleRing 3.5s ease-in-out infinite;
+}
+@keyframes idleRing {
+  0%,100% { opacity:0; transform:scale(1); }
+  50%     { opacity:0.2; transform:scale(1.012); }
+}
+#btn-venda:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,255,65,0.22); }
+#btn-venda:active { transform: scale(0.98); }
+
+#btn-desfazer {
+  width: 100%; padding: 11px;
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--text-mid);
+  border-radius: 8px;
+  font-family: var(--ui);
+  font-size: 13px; font-weight: 500;
+  letter-spacing: 1px; text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+#btn-desfazer:hover { border-color: var(--red); color: var(--red); background: var(--red-dim); }
+
+/* ── ORDENAR FILA — drag and drop ── */
+#sec-ordenar { padding: 16px 22px; }
+
+.ordenar-instrucao {
+  font-size: 13px;
+  color: var(--text-mid);
+  margin-bottom: 12px;
+}
+
+#lista-drag {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.drag-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s, box-shadow 0.15s;
+}
+
+.drag-item:hover { border-color: var(--border2); }
+.drag-item:active { cursor: grabbing; }
+
+.drag-item.dragging {
+  opacity: 0.3;
+  transform: scale(0.985);
+}
+
+.drag-item.drag-over {
+  border-color: rgba(0,255,65,0.35);
+  background: var(--green-dim);
+  box-shadow: 0 0 0 1px rgba(0,255,65,0.12);
+}
+
+/* Handle — 3 linhas CSS */
+.drag-handle {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex-shrink: 0;
+  opacity: 0.2;
+  transition: opacity 0.15s;
+}
+.drag-handle span {
+  display: block;
+  width: 14px; height: 1.5px;
+  background: var(--text);
+  border-radius: 99px;
+}
+.drag-item:hover .drag-handle { opacity: 0.5; }
+
+.drag-pos {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  width: 16px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.drag-nome {
+  font-family: var(--ui);
+  font-size: 15px;
+  font-weight: 600;
+  flex: 1;
+  color: var(--text);
+}
+
+/* Primeiro item destacado */
+.drag-item:first-child {
+  border-color: rgba(0,255,65,0.18);
+  background: var(--green-dim);
+}
+.drag-item:first-child .drag-pos { color: rgba(0,255,65,0.5); }
+.drag-item:first-child .drag-nome { color: var(--green); }
+
+.drag-now {
+  font-family: var(--mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #000;
+  background: var(--green);
+  padding: 3px 8px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* Botão salvar ordem */
+#btn-salvar-ordem {
+  display: none;
+  width: 100%;
+  margin-top: 10px;
+  padding: 13px;
+  background: var(--green); color: #000;
+  border: none; border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+#btn-salvar-ordem:hover { opacity: 0.88; }
+#btn-salvar-ordem:active { transform: scale(0.98); }
+#btn-salvar-ordem.visivel { display: block; animation: fadeUp 0.25s ease both; }
+
+/* ── PLACAR ── */
+#sec-placar { padding: 16px 22px; }
+
+#lista-placar { display: flex; flex-direction: column; gap: 4px; }
+
+.placar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+.placar-row.lider { background: var(--amber-dim); }
+
+.placar-rank { font-family: var(--mono); font-size: 10px; color: var(--text-dim); width: 14px; flex-shrink: 0; }
+.placar-row.lider .placar-rank { color: var(--amber); }
+
+.placar-nome { font-size: 15px; font-weight: 500; flex: 1; }
+.placar-row.lider .placar-nome { color: var(--amber); }
+
+.placar-bar-track { width: 50px; height: 2px; background: var(--border2); border-radius: 99px; overflow: hidden; flex-shrink: 0; }
+.placar-bar-fill  { height: 100%; background: var(--text-dim); border-radius: 99px; transition: width 0.6s cubic-bezier(0.16,1,0.3,1); }
+.placar-row.lider .placar-bar-fill { background: var(--amber); }
+
+.placar-count { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--text-mid); min-width: 16px; text-align: right; }
+.placar-row.lider .placar-count { color: var(--amber); }
+
+/* ── HISTÓRICO ── */
+#sec-historico { padding: 16px 22px; }
+
+#scroll-historico {
+  display: flex; flex-direction: column; gap: 4px;
+  max-height: 180px; overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+}
+
+.hist-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: var(--surface2);
+  border-radius: 6px;
+  animation: slideIn 0.2s ease both;
+}
+@keyframes slideIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+
+.hist-info { display: flex; flex-direction: column; gap: 2px; }
+.hist-nome { font-size: 14px; font-weight: 600; color: var(--green); }
+.hist-hora { font-family: var(--mono); font-size: 10px; color: var(--text-mid); }
+
+.btn-del {
+  background: none; border: none;
+  color: var(--text-dim);
+  cursor: pointer; font-size: 16px; line-height: 1;
+  padding: 3px 6px; border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.btn-del:hover { color: var(--red); background: var(--red-dim); }
+
+/* ── AUSENTES ── */
+#sec-ausentes { padding: 16px 22px; }
+
+#lista-ausentes { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+
+.ausente-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px 6px 13px;
+  border-radius: 7px;
+  background: var(--red-dim);
+  border: 1px solid rgba(255,59,59,0.18);
+}
+.ausente-nome { font-size: 14px; font-weight: 500; color: var(--red); }
+
+.btn-retornar {
+  font-family: var(--mono);
+  font-size: 9px; letter-spacing: 1px;
+  color: var(--text-mid);
+  background: none;
+  border: 1px solid var(--border2);
+  padding: 3px 8px; border-radius: 3px;
+  cursor: pointer; text-transform: uppercase;
+  transition: color 0.15s, border-color 0.15s;
+}
+.btn-retornar:hover { color: var(--green); border-color: rgba(0,255,65,0.3); }
+
+.ausente-form { display: flex; gap: 8px; }
+
+#select-ausente {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-family: var(--ui);
+  font-size: 14px; font-weight: 500;
+  outline: none; cursor: pointer; appearance: none;
+  transition: border-color 0.15s;
+}
+#select-ausente:focus { border-color: var(--border); }
+
+#btn-marcar-ausente {
+  padding: 10px 16px;
+  background: var(--red-dim);
+  border: 1px solid rgba(255,59,59,0.2);
+  color: var(--red);
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  cursor: pointer; white-space: nowrap;
+  transition: background 0.15s;
+}
+#btn-marcar-ausente:hover { background: rgba(255,59,59,0.16); }
+
+/* ── FOOTER ── */
+#footer {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; gap: 16px;
+  margin-top: 6px;
+}
+.footer-txt {
+  font-family: var(--mono);
+  font-size: 9px; color: var(--text-dim);
+  letter-spacing: 3px; text-transform: uppercase;
+}
+#btn-tv {
+  font-family: var(--mono);
+  font-size: 9px; letter-spacing: 3px;
+  color: var(--text-mid);
+  background: none;
+  border: 1px solid var(--border);
+  padding: 6px 14px; border-radius: 4px;
+  cursor: pointer; text-transform: uppercase;
+  transition: color 0.15s, border-color 0.15s;
+}
+#btn-tv:hover { color: var(--text); border-color: var(--border2); }
+
+/* ── MODO TV ── */
+#overlay-tv {
+  display: none; position: fixed; inset: 0;
+  background: var(--black); z-index: 200;
+  flex-direction: column; align-items: center; justify-content: center;
+}
+#overlay-tv.ativo { display: flex; }
+#overlay-tv::before {
+  content: ''; position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,255,65,0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,65,0.022) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+#overlay-tv::after {
+  content: ''; position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.85) 100%);
+}
+.tv-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px; letter-spacing: 9px;
+  color: rgba(0,255,65,0.28);
+  text-transform: uppercase; margin-bottom: 16px;
+  position: relative; z-index: 1;
+}
+#tv-nome {
+  font-family: var(--mono); font-weight: 800;
+  font-size: clamp(5rem, 18vw, 14rem);
+  line-height: 0.85; color: var(--green);
+  letter-spacing: -5px; text-align: center;
+  text-shadow: 0 0 80px rgba(0,255,65,0.4), 0 0 160px rgba(0,255,65,0.15);
+  position: relative; z-index: 1;
+}
+.tv-hint {
+  position: fixed; bottom: 28px; right: 28px;
+  font-family: var(--mono);
+  font-size: 9px; letter-spacing: 3px;
+  color: rgba(255,255,255,0.07);
+  background: none;
+  border: 1px solid rgba(255,255,255,0.04);
+  padding: 7px 14px; border-radius: 3px;
+  cursor: pointer; text-transform: uppercase;
+  z-index: 201; transition: color 0.2s, border-color 0.2s;
+}
+.tv-hint:hover { color: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.08); }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed; bottom: 26px; left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--green);
+  font-family: var(--mono);
+  font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+  padding: 10px 22px; border-radius: 6px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 300; white-space: nowrap;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── UTILITÁRIOS ── */
+.vazio {
+  font-family: var(--mono);
+  font-size: 9px; color: var(--text-dim);
+  letter-spacing: 3px; text-transform: uppercase;
+  padding: 4px 0;
+}
+</style>
 </head>
 <body>
 
-    <audio id="som-notificacao" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+<audio id="som" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
-    <div id="container-principal">
-        <img src="logo-amo.png" alt="AMO INTERNET" id="logo-header">
-    
-        <div id="card-fila">
-            <h1>PAINEL DE VENDAS</h1>
-            <div id="painel-vez">
-                <p>Sincronizando fila...</p>
-            </div>
+<div id="wrap">
 
-            <div style="margin-top: 20px;">
-                <button onclick="abrirConfigOrdem()" style="background:none; border: 1px solid #444; color:#888; padding:10px; border-radius:8px; cursor:pointer; font-size:0.8rem; width: 100%; transition: 0.2s;">
-                    ⚙️ DEFINIR ORDEM EXATA DA FILA
-                </button>
+  <img src="logo-amo.png" alt="AMO" class="logo-img">
+  <div id="relogio">--:--:--</div>
 
-                <div id="painel-ordem" style="display: none; margin-top: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid #444; text-align: left;">
-                    <label style="font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px;">Organize a fila (Use as setas):</label>
-                    <ul id="lista-ordem-editavel" style="list-style: none; padding: 0; margin: 10px 0;">
-                        </ul>
-                    <div style="display: flex; gap: 10px;">
-                        <button onclick="salvarOrdemExata()" style="flex: 1; background: var(--verde-neon); color: #000; padding: 10px; border-radius: 6px; font-weight: bold; border: none; cursor: pointer;">✅ SALVAR</button>
-                        <button onclick="fecharConfigOrdem()" style="flex: 1; background: #333; color: #fff; padding: 10px; border-radius: 6px; border: none; cursor: pointer;">❌ CANCELAR</button>
-                    </div>
-                </div>
-            </div>
-            
-            <button onclick="proximaVenda()" style="margin-top: 20px;">PEGUEI VENDA!</button>
-            
-            <button onclick="voltarVez()" style="background: none; border: none; color: #ff4444; font-size: 0.75rem; margin-top: 10px; cursor: pointer; text-decoration: underline;">
-                ⏪ Cliquei errado (Desfazer última venda)
-            </button>
-        </div>
+  <div class="card">
 
-        <div id="log-secao" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 15px; text-align: left;">
-            <h3 style="font-size: 0.7rem; color: #555; letter-spacing: 1.5px; margin-bottom: 10px; text-transform: uppercase;">Últimas Vendas</h3>
-            <div style="max-height: 250px; overflow-y: auto; padding-right: 5px;" id="scroll-log">
-                <ul id="lista-historico" style="list-style: none; padding: 0; margin: 0;"></ul>
-            </div>
-        </div>
+    <!-- VEZ DE -->
+    <div class="card-section" id="sec-vez">
+      <p class="vez-eyebrow">VEZ DE</p>
+      <div id="nome-vez">—</div>
+      <div class="vez-meta">
+        <div id="horario-badge">ESCALA <b id="horario-val">--:--</b></div>
+        <div class="sep-dot"></div>
+        <span id="cronometro">00:00</span>
+      </div>
+    </div>
 
-        <div id="toast">Venda registrada! ✅</div>
+    <!-- FILA ATUAL -->
+    <div class="card-section" id="sec-fila">
+      <p class="sec-label">FILA ATUAL</p>
+      <div id="lista-fila"><p class="vazio">CARREGANDO</p></div>
+    </div>
 
-    <script>
-        let vendedorAnterior = "";
-        let filaEditavel = []; // Variável para controlar a edição da fila
+    <!-- BOTÕES -->
+    <div class="card-section" id="sec-btns">
+      <button id="btn-venda" onclick="proximaVenda()">PEGUEI VENDA</button>
+      <button id="btn-desfazer" onclick="voltarVez()" style="margin-top:8px;">↩ DESFAZER ÚLTIMA VENDA</button>
+    </div>
 
-        function mostrarToast(texto) {
-            const toast = document.getElementById("toast");
-            toast.innerText = texto;
-            toast.className = "show";
-            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
-        }
+    <!-- ORDENAR FILA -->
+    <div class="card-section" id="sec-ordenar">
+      <p class="sec-label">ORDENAR FILA</p>
+      <p class="ordenar-instrucao">Arraste para reorganizar a ordem:</p>
+      <div id="lista-drag"></div>
+      <button id="btn-salvar-ordem" onclick="salvarOrdemDrag()">SALVAR ORDEM</button>
+    </div>
 
-        function atualizarHistorico() {
-            fetch('/historico')
-                .then(res => res.json())
-                .then(dados => {
-                    const lista = document.getElementById('lista-historico');
-                    if (lista) {
-                        lista.innerHTML = dados.map((venda, index) => `
-                            <li style="margin-bottom: 8px; padding: 8px 12px; background: rgba(255, 255, 255, 0.02); border-left: 3px solid var(--verde-neon); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                                <div style="display: flex; flex-direction: column;">
-                                    <span style="color: var(--verde-neon); font-weight: bold; font-size: 0.85rem;">${venda.nome}</span>
-                                    <span style="color: #555; font-size: 0.65rem;">${venda.hora}</span>
-                                </div>
-                                <button onclick="excluirVenda(${index})" style="width: 26px; height: 26px; background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; border-radius: 4px; display: flex; justify-content: center; align-items: center; color: #ff4444; cursor: pointer; font-size: 1.1rem; line-height: 1; transition: all 0.2s; margin-left: 10px; margin-top: -6px;" onmouseover="this.style.background='#ff4444'; this.style.color='#000'" onmouseout="this.style.background='rgba(255, 68, 68, 0.1)'; this.style.color='#ff4444'">
-                                    &times;
-                                </button>
-                            </li>
-                        `).join('');
-                    }
-                })
-                .catch(err => console.error("Erro no log:", err));
-        }
+    <!-- PLACAR -->
+    <div class="card-section" id="sec-placar">
+      <p class="sec-label">PLACAR DO DIA</p>
+      <div id="lista-placar"><p class="vazio">SEM VENDAS AINDA</p></div>
+    </div>
 
-        function proximaVenda(){
-            fetch('/proximo', {method: 'POST'})
-            .then(resposta => resposta.json())
-            .then(dados => {
-                if (dados.success) {
-                    mostrarToast("Venda registrada! ✅");
-                    buscarVez(); 
-                }
-            })
-            .catch(erro => console.error('Erro ao atualizar fila:', erro));
-        }
+    <!-- HISTÓRICO -->
+    <div class="card-section" id="sec-historico">
+      <p class="sec-label">ÚLTIMAS VENDAS</p>
+      <div id="scroll-historico"><p class="vazio">NENHUM REGISTRO</p></div>
+    </div>
 
-        function voltarVez() {
-            if (confirm("🚨 TEM CERTEZA? Isso vai apagar a última venda do histórico e devolver a vez para o vendedor anterior.")) {
-                fetch('/voltar-vez', { method: 'POST' })
-                .then(res => res.json())
-                .then(dados => {
-                    if (dados.success) {
-                        mostrarToast("Vez desfeita com sucesso! ⏪");
-                        buscarVez(); // Atualiza a tela para todo mundo
-                    } else {
-                        alert("Não é possível voltar mais do que isso.");
-                    }
-                })
-                .catch(erro => console.error('Erro ao voltar vez:', erro));
-            }
-        }
+    <!-- AUSENTES -->
+    <div class="card-section" id="sec-ausentes">
+      <p class="sec-label">AUSÊNCIAS</p>
+      <div id="lista-ausentes"></div>
+      <div class="ausente-form">
+        <select id="select-ausente">
+          <option value="">Marcar ausente...</option>
+        </select>
+        <button id="btn-marcar-ausente" onclick="confirmarAusente()">MARCAR</button>
+      </div>
+    </div>
 
-        function buscarVez() {
-            fetch('/vez')
-            .then(resposta => resposta.json())
-            .then(dados => {
-                const painel = document.getElementById('painel-vez');
+  </div>
 
-                if (vendedorAnterior !== "" && vendedorAnterior !== dados.vendedor) {
-                    const som = document.getElementById('som-notificacao');
-                    som.play().catch(e => console.log("Aguardando clique para liberar som..."));
-                }
-                
-                vendedorAnterior = dados.vendedor;
-                atualizarHistorico();
+  <div id="footer">
+    <span class="footer-txt">AMO FILA v2.0</span>
+    <button id="btn-tv" onclick="abrirTV()">◉ MODO TV</button>
+  </div>
 
-                // SALVA A FILA ATUAL PARA EDIÇÃO
-                if (dados.filaAtual) {
-                    // Só atualiza a fila editável se o painel de configuração estiver fechado
-                    // para não resetar o que o usuário está arrumando
-                    if(document.getElementById('painel-ordem').style.display === 'none') {
-                        filaEditavel = [...dados.filaAtual];
-                    }
-                }
+</div>
 
-                painel.classList.remove('fade-in');
-                void painel.offsetWidth; 
-                painel.classList.add('fade-in');
+<div id="overlay-tv">
+  <p class="tv-eyebrow">vez de vender</p>
+  <div id="tv-nome">—</div>
+  <button class="tv-hint" onclick="fecharTV()">ESC — FECHAR</button>
+</div>
 
-                painel.innerHTML = `
-                    <h2>Vez de:</h2>
-                    <strong>${dados.vendedor}</strong>
-                    <p class="horario-escala">Escala de ${dados.horario}</p>
-                `;
-            })
-            .catch(erro => console.error('Erro ao buscar a vez:', erro));
-        }
+<div id="toast"></div>
 
-        function excluirVenda(index) {
-            if (confirm("Deseja remover este registro do histórico?")) {
-                fetch('/excluir-venda', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ index: index })
-                })
-                .then(res => res.json())
-                .then(dados => {
-                    if (dados.success) {
-                        atualizarHistorico(); 
-                        mostrarToast("Registro removido! 🗑️");
-                    }
-                })
-                .catch(err => console.error("Erro ao excluir:", err));
-            }
-        }
+<script>
+let vendedorAnterior = "";
+let filaAtualGlobal  = [];
+let inicioVez        = Date.now();
 
-        // --- FUNÇÕES DA NOVA INTERFACE DE CONFIGURAÇÃO DE ORDEM ---
+// ── RELÓGIO ──
+(function tick() {
+  document.getElementById('relogio').textContent =
+    new Date().toLocaleTimeString('pt-BR', { hour12: false });
+  setTimeout(tick, 1000);
+})();
 
-        function abrirConfigOrdem() {
-            // Primeiro atualizamos a fila editável para garantir que pegamos a ordem do servidor
-            // Mas, como o array que vem do servidor nem sempre tem quem está na tela como o primeiro
-            // (devido ao cálculo do módulo), nós precisamos reorganizar o array antes de editar.
-            
-            fetch('/vez')
-            .then(res => res.json())
-            .then(dados => {
-                if(dados.filaAtual) {
-                    const indexAtual = dados.filaAtual.indexOf(dados.vendedor);
-                    if(indexAtual !== -1) {
-                         // Reorganiza para o vendedor atual ser o topo da lista
-                         filaEditavel = [...dados.filaAtual.slice(indexAtual), ...dados.filaAtual.slice(0, indexAtual)];
-                    } else {
-                         filaEditavel = [...dados.filaAtual];
-                    }
-                    document.getElementById('painel-ordem').style.display = 'block';
-                    renderizarListaEdicao();
-                }
-            });
-        }
+// ── CRONÔMETRO ──
+function resetarCronometro() { inicioVez = Date.now(); }
 
-        function fecharConfigOrdem() {
-            document.getElementById('painel-ordem').style.display = 'none';
-        }
+(function tickCrono() {
+  const seg = Math.floor((Date.now() - inicioVez) / 1000);
+  const el  = document.getElementById('cronometro');
+  el.textContent = String(Math.floor(seg/60)).padStart(2,'0') + ':' + String(seg%60).padStart(2,'0');
+  el.className   = seg > 600 ? 'critico' : seg > 300 ? 'urgente' : '';
+  setTimeout(tickCrono, 1000);
+})();
 
-        function renderizarListaEdicao() {
-            const ul = document.getElementById('lista-ordem-editavel');
-            ul.innerHTML = filaEditavel.map((nome, index) => `
-                <li style="display: flex; justify-content: space-between; align-items: center; background: #222; margin-bottom: 5px; padding: 8px 12px; border-radius: 4px; border: 1px solid #333;">
-                    <span style="color: #fff; font-size: 0.85rem;"><strong>${index + 1}º</strong> - ${nome}</span>
-                    <div>
-                        <button onclick="moverCima(${index})" style="background: none; border: none; font-size: 1.2rem; cursor: ${index === 0 ? 'not-allowed' : 'pointer'}; opacity: ${index === 0 ? '0.3' : '1'};">🔼</button>
-                        <button onclick="moverBaixo(${index})" style="background: none; border: none; font-size: 1.2rem; cursor: ${index === filaEditavel.length - 1 ? 'not-allowed' : 'pointer'}; opacity: ${index === filaEditavel.length - 1 ? '0.3' : '1'};">🔽</button>
-                    </div>
-                </li>
-            `).join('');
-        }
+// ── TOAST ──
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2600);
+}
 
-        function moverCima(index) {
-            if (index > 0) {
-                [filaEditavel[index - 1], filaEditavel[index]] = [filaEditavel[index], filaEditavel[index - 1]];
-                renderizarListaEdicao();
-            }
-        }
+// ── FILA ATUAL (chips) ──
+function renderFila(lista, atual) {
+  const el = document.getElementById('lista-fila');
+  if (!lista?.length) { el.innerHTML = '<p class="vazio">FILA VAZIA</p>'; return; }
+  const idx = lista.indexOf(atual);
+  const ord = idx !== -1 ? [...lista.slice(idx), ...lista.slice(0, idx)] : lista;
+  el.innerHTML = ord.map((nome, i) => `
+    <div class="fila-chip ${i === 0 ? 'atual' : ''}">
+      <span class="fila-pos-num">${i + 1}</span>
+      ${nome}
+    </div>`).join('');
+}
 
-        function moverBaixo(index) {
-            if (index < filaEditavel.length - 1) {
-                [filaEditavel[index + 1], filaEditavel[index]] = [filaEditavel[index], filaEditavel[index + 1]];
-                renderizarListaEdicao();
-            }
-        }
+// ── DRAG AND DROP ──
+let ordemDrag = [], dragSrc = null, ordemAlterada = false;
 
-        function salvarOrdemExata() {
-            if(confirm("Confirmar esta nova ordem para a operação de vendas?")) {
-                fetch('/salvar-ordem-exata', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ novaOrdem: filaEditavel })
-                })
-                .then(res => res.json())
-                .then(dados => {
-                    if (dados.success) {
-                        buscarVez();
-                        fecharConfigOrdem();
-                        mostrarToast("Fila organizada com sucesso! ✅");
-                    }
-                })
-                .catch(err => console.error("Erro ao salvar ordem exata:", err));
-            }
-        }
+function renderDragList(lista) {
+  ordemDrag = [...lista];
+  ordemAlterada = false;
+  document.getElementById('btn-salvar-ordem').classList.remove('visivel');
+  _buildDragList();
+}
 
-        // Inicialização
-        buscarVez();
-        setInterval(buscarVez, 5000);
-    </script>
+function _buildDragList() {
+  const el = document.getElementById('lista-drag');
+  if (!ordemDrag.length) { el.innerHTML = '<p class="vazio">FILA VAZIA</p>'; return; }
+
+  el.innerHTML = ordemDrag.map((nome, i) => `
+    <div class="drag-item" draggable="true" data-index="${i}">
+      <div class="drag-handle"><span></span><span></span><span></span></div>
+      <span class="drag-pos">${i + 1}</span>
+      <span class="drag-nome">${nome}</span>
+      ${i === 0 ? '<span class="drag-now">VEZ</span>' : ''}
+    </div>`).join('');
+
+  el.querySelectorAll('.drag-item').forEach(item => {
+    item.addEventListener('dragstart', _onDragStart);
+    item.addEventListener('dragover',  _onDragOver);
+    item.addEventListener('drop',      _onDrop);
+    item.addEventListener('dragend',   _onDragEnd);
+    item.addEventListener('touchstart', _onTouchStart, { passive: true });
+    item.addEventListener('touchmove',  _onTouchMove,  { passive: false });
+    item.addEventListener('touchend',   _onTouchEnd);
+  });
+}
+
+// Desktop
+function _onDragStart(e) {
+  dragSrc = this;
+  this.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function _onDragOver(e) {
+  e.preventDefault();
+  document.querySelectorAll('.drag-item').forEach(i => i.classList.remove('drag-over'));
+  this.classList.add('drag-over');
+}
+function _onDrop(e) {
+  e.preventDefault();
+  if (dragSrc === this) return;
+  const from = parseInt(dragSrc.dataset.index);
+  const to   = parseInt(this.dataset.index);
+  ordemDrag.splice(to, 0, ordemDrag.splice(from, 1)[0]);
+  ordemAlterada = true;
+  _buildDragList();
+  document.getElementById('btn-salvar-ordem').classList.add('visivel');
+}
+function _onDragEnd() {
+  document.querySelectorAll('.drag-item').forEach(i => i.classList.remove('dragging','drag-over'));
+}
+
+// Mobile touch
+let _touchItem = null, _touchClone = null, _touchFromIdx = null;
+
+function _onTouchStart(e) {
+  _touchItem    = this;
+  _touchFromIdx = parseInt(this.dataset.index);
+  const t = e.touches[0];
+  _touchClone = this.cloneNode(true);
+  _touchClone.style.cssText = `
+    position:fixed; z-index:9999; pointer-events:none; opacity:0.85;
+    width:${this.offsetWidth}px; left:${this.getBoundingClientRect().left}px;
+    top:${t.clientY - this.offsetHeight/2}px;
+    border:1px solid var(--green); background:var(--surface2);
+    border-radius:8px; transform:scale(1.03);`;
+  document.body.appendChild(_touchClone);
+  this.classList.add('dragging');
+}
+function _onTouchMove(e) {
+  e.preventDefault();
+  const t = e.touches[0];
+  if (_touchClone) _touchClone.style.top = (t.clientY - _touchClone.offsetHeight/2) + 'px';
+  document.querySelectorAll('.drag-item').forEach(i => i.classList.remove('drag-over'));
+  const over = document.elementFromPoint(t.clientX, t.clientY)?.closest('.drag-item');
+  if (over && over !== _touchItem) over.classList.add('drag-over');
+}
+function _onTouchEnd(e) {
+  if (_touchClone) { _touchClone.remove(); _touchClone = null; }
+  document.querySelectorAll('.drag-item').forEach(i => i.classList.remove('dragging','drag-over'));
+  const t      = e.changedTouches[0];
+  const target = document.elementFromPoint(t.clientX, t.clientY)?.closest('.drag-item');
+  if (target && target !== _touchItem) {
+    const to = parseInt(target.dataset.index);
+    ordemDrag.splice(to, 0, ordemDrag.splice(_touchFromIdx, 1)[0]);
+    ordemAlterada = true;
+    _buildDragList();
+    document.getElementById('btn-salvar-ordem').classList.add('visivel');
+  }
+  _touchItem = null; _touchFromIdx = null;
+}
+
+function salvarOrdemDrag() {
+  if (!ordemAlterada) return;
+  fetch('/salvar-ordem-exata', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ novaOrdem: ordemDrag })
+  }).then(r => r.json()).then(d => {
+    if (d.success) {
+      toast('ORDEM SALVA ✓');
+      ordemAlterada = false;
+      document.getElementById('btn-salvar-ordem').classList.remove('visivel');
+      buscarVez();
+    }
+  });
+}
+
+// ── PLACAR ──
+function renderPlacar(hist) {
+  const el  = document.getElementById('lista-placar');
+  const cnt = {};
+  hist.forEach(v => { cnt[v.nome] = (cnt[v.nome] || 0) + 1; });
+  const ord = Object.entries(cnt).sort((a,b) => b[1]-a[1]);
+  if (!ord.length) { el.innerHTML = '<p class="vazio">SEM VENDAS AINDA</p>'; return; }
+  const max = ord[0][1];
+  el.innerHTML = ord.map(([nome, qtd], i) => `
+    <div class="placar-row ${i === 0 ? 'lider' : ''}">
+      <span class="placar-rank">${i + 1}</span>
+      <span class="placar-nome">${nome}</span>
+      <div class="placar-bar-track">
+        <div class="placar-bar-fill" style="width:${Math.round(qtd/max*100)}%"></div>
+      </div>
+      <span class="placar-count">${qtd}</span>
+    </div>`).join('');
+}
+
+// ── HISTÓRICO ──
+function renderHistorico(hist) {
+  const el = document.getElementById('scroll-historico');
+  if (!hist.length) { el.innerHTML = '<p class="vazio">NENHUM REGISTRO</p>'; return; }
+  el.innerHTML = hist.map((v, i) => `
+    <div class="hist-row">
+      <div class="hist-info">
+        <span class="hist-nome">${v.nome}</span>
+        <span class="hist-hora">${v.hora}</span>
+      </div>
+      <button class="btn-del" onclick="excluirVenda(${i})">×</button>
+    </div>`).join('');
+  renderPlacar(hist);
+}
+
+// ── AUSENTES ──
+function renderAusentes(lista) {
+  const el = document.getElementById('lista-ausentes');
+  if (!lista?.length) { el.innerHTML = ''; return; }
+  el.innerHTML = lista.map(n => `
+    <div class="ausente-chip">
+      <span class="ausente-nome">${n}</span>
+      <button class="btn-retornar" onclick="retornar('${n}')">RETORNAR</button>
+    </div>`).join('');
+}
+
+function popularSelect(lista) {
+  const sel = document.getElementById('select-ausente');
+  const val = sel.value;
+  sel.innerHTML = '<option value="">Marcar ausente...</option>' +
+    lista.map(n => `<option value="${n}"${n===val?' selected':''}>${n}</option>`).join('');
+}
+
+// ── BUSCAR VEZ ──
+function buscarVez() {
+  fetch('/vez')
+    .then(r => r.json())
+    .then(d => {
+      const mudou = vendedorAnterior !== '' && vendedorAnterior !== d.vendedor;
+      if (mudou) { document.getElementById('som').play().catch(()=>{}); resetarCronometro(); }
+      if (vendedorAnterior === '') resetarCronometro();
+      vendedorAnterior = d.vendedor;
+
+      const nomeEl = document.getElementById('nome-vez');
+      if (nomeEl.textContent !== d.vendedor) {
+        nomeEl.classList.remove('trocando');
+        void nomeEl.offsetWidth;
+        nomeEl.classList.add('trocando');
+        setTimeout(() => { nomeEl.textContent = d.vendedor; }, 150);
+      }
+
+      document.getElementById('tv-nome').textContent = d.vendedor;
+      document.getElementById('horario-val').textContent = d.horario;
+
+      const badge = document.getElementById('horario-badge');
+      badge.style.borderColor = d.foraDaEscala ? 'rgba(255,184,0,0.4)' : '';
+      badge.style.color       = d.foraDaEscala ? 'var(--amber)' : '';
+
+      if (d.filaAtual) {
+        filaAtualGlobal = d.filaAtual;
+        renderFila(d.filaAtual, d.vendedor);
+        if (!ordemAlterada) renderDragList(d.filaAtual);
+        popularSelect(d.filaAtual);
+      }
+
+      fetch('/historico').then(r => r.json()).then(renderHistorico).catch(()=>{});
+    })
+    .catch(()=>{});
+}
+
+// ── AÇÕES ──
+function proximaVenda() {
+  fetch('/proximo', { method: 'POST' })
+    .then(r => r.json())
+    .then(d => { if (d.success) { toast('VENDA REGISTRADA ✓'); buscarVez(); } });
+}
+
+function voltarVez() {
+  if (!confirm('Desfazer a última venda e devolver a vez?')) return;
+  fetch('/voltar-vez', { method: 'POST' })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) { toast('DESFEITO ↩'); buscarVez(); }
+      else alert('Não é possível voltar mais.');
+    });
+}
+
+function excluirVenda(i) {
+  if (!confirm('Remover este registro?')) return;
+  fetch('/excluir-venda', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ index: i })
+  }).then(r => r.json()).then(d => { if (d.success) { toast('REMOVIDO'); buscarVez(); } });
+}
+
+function confirmarAusente() {
+  const v = document.getElementById('select-ausente').value;
+  if (!v) return;
+  fetch('/ausente', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ vendedor: v })
+  }).then(r => r.json()).then(d => {
+    if (d.success) { toast(`${v} — AUSENTE`); renderAusentes(d.ausentes); buscarVez(); }
+  });
+}
+
+function retornar(nome) {
+  fetch('/retornar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ vendedor: nome })
+  }).then(r => r.json()).then(d => {
+    if (d.success) { toast(`${nome} — RETORNOU ✓`); renderAusentes(d.ausentes); buscarVez(); }
+  });
+}
+
+// ── MODO TV ──
+function abrirTV() {
+  document.getElementById('overlay-tv').classList.add('ativo');
+  document.addEventListener('keydown', _tvKey);
+}
+function fecharTV() {
+  document.getElementById('overlay-tv').classList.remove('ativo');
+  document.removeEventListener('keydown', _tvKey);
+}
+function _tvKey(e) { if (e.key === 'Escape') fecharTV(); }
+
+// ── INIT ──
+buscarVez();
+fetch('/ausentes').then(r => r.json()).then(d => renderAusentes(d.ausentes)).catch(()=>{});
+setInterval(buscarVez, 5000);
+</script>
 </body>
 </html>
