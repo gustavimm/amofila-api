@@ -22,14 +22,14 @@ function salvarIndice(novoValor) {
 
 function carregarEscala() {
     // 🚀 AQUI ESTÃO OS HORÁRIOS NOVOS E CORRIGIDOS
-    const escalaPadrao = {
-        "08": ["Tifani", "Lavinia", "Lucas"],
-        "09": ["Ana Carolina"],
-        "10": ["Gustavo", "Amanda"],
-        "11": ["Tifani", "Lavinia", "Lucas", "Ana Carolina", "Gustavo", "Amanda"],
-        "17": ["Gustavo", "Amanda", "Ana Carolina"],
-        "18": ["Amanda", "Gustavo"]
-    };
+   const escalaPadrao = {
+    "08": ["Isabella", "Gustavo", "Lavinia"],
+    "09": ["Tifani", "Luis"],
+    "10": ["Lucas", "Ana Carolina"],
+    "11": ["Isabella", "Gustavo", "Lavinia", "Tifani", "Luis", "Lucas", "Ana Carolina"],
+    "17": ["Gustavo", "Amanda", "Ana Carolina"],
+    "18": ["Amanda", "Gustavo"]
+};
     try {
         if (fs.existsSync('escala_custom.json')) {
             const dados = fs.readFileSync('escala_custom.json', 'utf-8');
