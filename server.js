@@ -122,7 +122,13 @@ app.get('/ausentes', (req, res) => {
 });
 
 app.post('/proximo', (req, res) => {
-  const { quemEstaNaVez, horaLog } = getEstadoAtual();
+  const { vendedoresAgora, quemEstaNaVez, horaLog } = getEstadoAtual();
+
+  // Proteção: não registra se a fila estiver vazia ou vendedor inválido
+  if (!quemEstaNaVez || vendedoresAgora.length === 0) {
+    return res.json({ success: false, message: "Nenhum vendedor na fila." });
+  }
+
   historicoVendas.unshift({ nome: quemEstaNaVez, hora: horaLog });
   if (historicoVendas.length > 50) historicoVendas.pop();
   indiceFila++;
@@ -237,11 +243,31 @@ app.post('/reordenar', (req, res) => {
   res.json({ success: true, novaLista: vendedores });
 });
 
+app.get('/limpar-historico', (req, res) => {
+  const antes = historicoVendas.length;
+  historicoVendas = historicoVendas.filter(v => v.nome && v.nome !== 'undefined');
+  const depois = historicoVendas.length;
+  salvarEstado();
+  res.send(`<h1>✅ Histórico limpo!</h1><p>Removidos ${antes - depois} registros inválidos. Restaram ${depois} vendas válidas.</p>`);
+});
+
 app.get('/reset-ausentes', (req, res) => {
+  // Remove todos os ausentes e restaura escala padrão para eles
   vendedoresAusentes = [];
   escala = JSON.parse(JSON.stringify(ESCALA_PADRAO));
+  // Mantém histórico e índice
   salvarEstado();
-  res.send("<h1>✅ Ausentes limpos!</h1><p>Todos os vendedores estão de volta. Histórico preservado.</p>");
+  res.send("<h1>✅ Ausentes limpos!</h1><p>Todos os vendedores estão de volta na fila. Histórico preservado.</p>");
+});
+
+app.get('/reset-geral', (req, res) => {
+  indiceFila         = 0;
+  ultimoBloco        = "";
+  historicoVendas    = [];
+  vendedoresAusentes = [];
+  escala             = JSON.parse(JSON.stringify(ESCALA_PADRAO));
+  salvarEstado();
+  res.send("<h1>🔄 Sistema resetado!</h1><p>Escala voltou ao padrão e índice zerado.</p>");
 });
 
 if (require.main === module) {

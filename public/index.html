@@ -857,7 +857,8 @@ function salvarOrdemDrag() {
 function renderPlacar(hist) {
   const el  = document.getElementById('lista-placar');
   const cnt = {};
-  hist.forEach(v => { cnt[v.nome] = (cnt[v.nome] || 0) + 1; });
+  // Filtra registros inválidos antes de contar
+  hist.filter(v => v.nome && v.nome !== 'undefined').forEach(v => { cnt[v.nome] = (cnt[v.nome] || 0) + 1; });
   const ord = Object.entries(cnt).sort((a,b) => b[1]-a[1]);
   if (!ord.length) { el.innerHTML = '<p class="vazio">SEM VENDAS AINDA</p>'; return; }
   const max = ord[0][1];
@@ -875,6 +876,9 @@ function renderPlacar(hist) {
 // ── HISTÓRICO ──
 function renderHistorico(hist) {
   const el = document.getElementById('scroll-historico');
+  if (!hist.length) { el.innerHTML = '<p class="vazio">NENHUM REGISTRO</p>'; return; }
+  // Filtra registros inválidos
+  hist = hist.filter(v => v.nome && v.nome !== 'undefined');
   if (!hist.length) { el.innerHTML = '<p class="vazio">NENHUM REGISTRO</p>'; return; }
   el.innerHTML = hist.map((v, i) => `
     <div class="hist-row">
