@@ -613,7 +613,7 @@ body::after {
 </head>
 <body>
 
-<audio id="som" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+<audio id="som" src="https://assets.mixkit.co/active_storage/sfx/2867/2867-preview.mp3" preload="auto"></audio>
 
 <div id="wrap">
 
@@ -697,7 +697,7 @@ body::after {
 <script>
 let vendedorAnterior = "";
 let filaAtualGlobal  = [];
-let inicioVez        = Date.now();
+let inicioVez        = parseInt(localStorage.getItem('amofila_inicio_vez') || Date.now());
 
 // ── RELÓGIO ──
 (function tick() {
@@ -707,7 +707,11 @@ let inicioVez        = Date.now();
 })();
 
 // ── CRONÔMETRO ──
-function resetarCronometro() { inicioVez = Date.now(); }
+function resetarCronometro() {
+  inicioVez = Date.now();
+  localStorage.setItem('amofila_inicio_vez', inicioVez);
+  localStorage.setItem('amofila_vendedor_vez', vendedorAnterior);
+}
 
 (function tickCrono() {
   const seg = Math.floor((Date.now() - inicioVez) / 1000);
@@ -914,9 +918,21 @@ function buscarVez() {
   fetch('/vez')
     .then(r => r.json())
     .then(d => {
+      const vendedorSalvo = localStorage.getItem('amofila_vendedor_vez') || '';
       const mudou = vendedorAnterior !== '' && vendedorAnterior !== d.vendedor;
-      if (mudou) { document.getElementById('som').play().catch(()=>{}); resetarCronometro(); }
-      if (vendedorAnterior === '') resetarCronometro();
+
+      if (mudou) {
+        // Vendedor mudou em tempo real — toca som e reseta cronômetro
+        const som = document.getElementById('som');
+        som.volume = 0.35;
+        som.play().catch(()=>{});
+        resetarCronometro();
+      } else if (vendedorAnterior === '' && vendedorSalvo !== d.vendedor) {
+        // Primeira carga após F5, mas o vendedor mudou desde o último acesso
+        resetarCronometro();
+      }
+      // Se vendedorSalvo === d.vendedor, o cronômetro continua de onde parou
+
       vendedorAnterior = d.vendedor;
 
       const nomeEl = document.getElementById('nome-vez');
