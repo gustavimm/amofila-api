@@ -938,6 +938,7 @@ function buscarVez() {
       }
 
       fetch('/historico').then(r => r.json()).then(renderHistorico).catch(()=>{});
+      fetch('/ausentes').then(r => r.json()).then(d => renderAusentes(d.ausentes)).catch(()=>{});
     })
     .catch(()=>{});
 }
