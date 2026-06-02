@@ -237,14 +237,11 @@ app.post('/reordenar', (req, res) => {
   res.json({ success: true, novaLista: vendedores });
 });
 
-app.get('/reset-geral', (req, res) => {
-  indiceFila         = 0;
-  ultimoBloco        = "";
-  historicoVendas    = [];
+app.get('/reset-ausentes', (req, res) => {
   vendedoresAusentes = [];
-  escala             = JSON.parse(JSON.stringify(ESCALA_PADRAO));
+  escala = JSON.parse(JSON.stringify(ESCALA_PADRAO));
   salvarEstado();
-  res.send("<h1>🔄 Sistema resetado!</h1><p>Escala voltou ao padrão e índice zerado.</p>");
+  res.send("<h1>✅ Ausentes limpos!</h1><p>Todos os vendedores estão de volta. Histórico preservado.</p>");
 });
 
 if (require.main === module) {
