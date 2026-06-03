@@ -50,7 +50,29 @@ function confirmarSenha() {
 
 function renderBlocosEscala() {
   const container = document.getElementById('blocos-escala');
-  container.innerHTML = Object.keys(BLOCOS_LABELS).map(chave => {
+
+  // Seção de resets no topo do editor
+  const htmlResets = `
+    <div style="padding: 16px 22px; border-bottom: 1px solid var(--border); display: flex; gap: 8px;">
+      <button onclick="resetAusentes()" style="
+        flex:1; padding:11px; background:none;
+        border:1px solid rgba(255,184,0,0.3); color:var(--amber);
+        border-radius:8px; font-family:var(--mono); font-size:10px;
+        font-weight:700; letter-spacing:2px; text-transform:uppercase;
+        cursor:pointer; transition:all 0.15s;">
+        ↩ RESETAR AUSENTES
+      </button>
+      <button onclick="resetGeral()" style="
+        flex:1; padding:11px; background:none;
+        border:1px solid rgba(255,59,59,0.3); color:var(--red);
+        border-radius:8px; font-family:var(--mono); font-size:10px;
+        font-weight:700; letter-spacing:2px; text-transform:uppercase;
+        cursor:pointer; transition:all 0.15s;">
+        ⚠ RESET GERAL
+      </button>
+    </div>`;
+
+  container.innerHTML = htmlResets + Object.keys(BLOCOS_LABELS).map(chave => {
     const ativos = escalaEditavel[chave] || [];
     const chips = todosVendedores.map(nome => {
       const ativo = ativos.includes(nome);
@@ -85,4 +107,17 @@ function salvarEscala() {
     if (d.success) { toast('ESCALA SALVA ✓'); fecharEscala(); buscarVez(); }
     else alert('Erro ao salvar: ' + d.message);
   });
+}
+
+function resetAusentes() {
+  if (!confirm('Devolver todos os ausentes para a fila?')) return;
+  fetch('/reset-ausentes')
+    .then(r => r.json ? r : r)
+    .then(() => { toast('AUSENTES RESETADOS ✓'); fecharEscala(); buscarVez(); });
+}
+
+function resetGeral() {
+  if (!confirm('⚠️ RESET GERAL — apaga histórico, placar e reinicia a fila do zero. Tem certeza?')) return;
+  fetch('/reset-geral')
+    .then(() => { toast('SISTEMA RESETADO ✓'); fecharEscala(); buscarVez(); });
 }
