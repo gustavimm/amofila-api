@@ -93,7 +93,14 @@ function getEstadoAtual() {
 app.get('/vez', (req, res) => {
   const { chaveEscala, vendedoresAgora, quemEstaNaVez, horaBrasilia } = getEstadoAtual();
   if (ultimoBloco !== "" && ultimoBloco !== chaveEscala) {
-    indiceFila = 0;
+    // Virada de turno — tenta manter o índice proporcional ao novo bloco
+    // se o novo bloco tiver menos vendedores
+    const novoTamanho = vendedoresAgora.length;
+    if (novoTamanho > 0) {
+      indiceFila = indiceFila % novoTamanho;
+    } else {
+      indiceFila = 0;
+    }
     salvarEstado();
   }
   ultimoBloco = chaveEscala;
@@ -199,7 +206,7 @@ app.post('/retornar', (req, res) => {
       escala[chave] = nova;
     }
   }
-  indiceFila = 0;
+  // Não reseta indiceFila — a vez continua de onde estava
   salvarEstado();
   res.json({ success: true, ausentes: vendedoresAusentes });
 });
@@ -217,9 +224,14 @@ app.post('/definir-vez', (req, res) => {
 
 app.post('/salvar-ordem-exata', (req, res) => {
   const { novaOrdem } = req.body;
-  const { chaveEscala } = getEstadoAtual();
+  const { chaveEscala, quemEstaNaVez } = getEstadoAtual();
+
+  // Descobre a posição atual do vendedor na nova ordem
+  // para que a vez não mude ao reorganizar
+  const novaPosicao = novaOrdem.indexOf(quemEstaNaVez);
   escala[chaveEscala] = novaOrdem;
-  indiceFila = 0;
+  indiceFila = novaPosicao !== -1 ? novaPosicao : 0;
+
   salvarEstado();
   res.json({ success: true, novaLista: novaOrdem });
 });
