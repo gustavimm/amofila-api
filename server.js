@@ -15,7 +15,9 @@ const ESCALA_PADRAO = {
   "fora": ["Isabella", "Gustavo", "Lavinia", "Tifani", "Luis", "Amanda", "Lucas", "Ana Carolina"]
 };
 
-// ── PERSISTÊNCIA ──
+// Lista mestre de todos os vendedores
+const TODOS_VENDEDORES = ["Isabella", "Gustavo", "Lavinia", "Tifani", "Luis", "Amanda", "Lucas", "Ana Carolina"];
+
 const ARQUIVO_ESTADO = path.join(__dirname, 'estado.json');
 
 function carregarEstado() {
@@ -45,7 +47,6 @@ function salvarEstado() {
   }
 }
 
-// ── ESTADO INICIAL ──
 const estadoSalvo = carregarEstado();
 
 let indiceFila         = estadoSalvo?.indiceFila         ?? 0;
@@ -54,11 +55,8 @@ let historicoVendas    = estadoSalvo?.historicoVendas    ?? [];
 let vendedoresAusentes = estadoSalvo?.vendedoresAusentes ?? [];
 let escala             = estadoSalvo?.escala             ?? JSON.parse(JSON.stringify(ESCALA_PADRAO));
 
-// Garante chave "fora" em estados antigos
 if (!escala["fora"]) escala["fora"] = [...ESCALA_PADRAO["fora"]];
 
-// IMPORTANTE: ao restaurar do disco, reaplica os ausentes salvos
-// Isso garante que um restart não devolve quem estava ausente
 if (estadoSalvo && vendedoresAusentes.length > 0) {
   for (const chave in escala) {
     escala[chave] = escala[chave].filter(v => !vendedoresAusentes.includes(v));
@@ -69,7 +67,6 @@ if (estadoSalvo && vendedoresAusentes.length > 0) {
 app.use(express.static('public'));
 app.use(express.json());
 
-// ── FUNÇÃO CENTRAL ──
 function getChaveEscala(horaReal) {
   if (horaReal === 8)                  return "08";
   if (horaReal === 9)                  return "09";
@@ -95,15 +92,11 @@ function getEstadoAtual() {
 
 app.get('/vez', (req, res) => {
   const { chaveEscala, vendedoresAgora, quemEstaNaVez, horaBrasilia } = getEstadoAtual();
-
-  // Virada de turno: reseta índice mas NÃO mexe na escala
-  // (ausentes continuam removidos)
   if (ultimoBloco !== "" && ultimoBloco !== chaveEscala) {
     indiceFila = 0;
     salvarEstado();
   }
   ultimoBloco = chaveEscala;
-
   res.json({
     vendedor:     quemEstaNaVez,
     horario:      `${horaBrasilia}:00`,
@@ -113,22 +106,45 @@ app.get('/vez', (req, res) => {
   });
 });
 
-app.get('/historico', (req, res) => {
-  res.json(historicoVendas);
+app.get('/historico', (req, res) => res.json(historicoVendas));
+app.get('/ausentes',  (req, res) => res.json({ ausentes: vendedoresAusentes }));
+
+// Retorna escala completa + lista de todos os vendedores
+app.get('/escala', (req, res) => {
+  res.json({ escala, todos: TODOS_VENDEDORES });
 });
 
-app.get('/ausentes', (req, res) => {
-  res.json({ ausentes: vendedoresAusentes });
+// Salva escala editada pelo painel
+app.post('/salvar-escala', (req, res) => {
+  const { novaEscala } = req.body;
+  if (!novaEscala || typeof novaEscala !== 'object') {
+    return res.json({ success: false, message: 'Escala inválida.' });
+  }
+
+  // Valida cada chave
+  const chavesValidas = Object.keys(ESCALA_PADRAO);
+  for (const chave of Object.keys(novaEscala)) {
+    if (!chavesValidas.includes(chave)) continue;
+    if (!Array.isArray(novaEscala[chave])) {
+      return res.json({ success: false, message: `Chave ${chave} inválida.` });
+    }
+  }
+
+  // Aplica a nova escala mantendo ausentes removidos
+  for (const chave in novaEscala) {
+    escala[chave] = novaEscala[chave].filter(v => !vendedoresAusentes.includes(v));
+  }
+
+  indiceFila = 0;
+  salvarEstado();
+  res.json({ success: true });
 });
 
 app.post('/proximo', (req, res) => {
   const { vendedoresAgora, quemEstaNaVez, horaLog } = getEstadoAtual();
-
-  // Proteção: não registra se a fila estiver vazia ou vendedor inválido
   if (!quemEstaNaVez || vendedoresAgora.length === 0) {
     return res.json({ success: false, message: "Nenhum vendedor na fila." });
   }
-
   historicoVendas.unshift({ nome: quemEstaNaVez, hora: horaLog });
   if (historicoVendas.length > 50) historicoVendas.pop();
   indiceFila++;
@@ -161,25 +177,12 @@ app.post('/excluir-venda', (req, res) => {
 app.post('/ausente', (req, res) => {
   const { vendedor } = req.body;
   if (!vendedor) return res.json({ success: false, message: "Vendedor não informado." });
-
-  // Adiciona à lista de ausentes (sem duplicar)
-  if (!vendedoresAusentes.includes(vendedor)) {
-    vendedoresAusentes.push(vendedor);
-  }
-
-  // Remove de TODAS as chaves da escala
+  if (!vendedoresAusentes.includes(vendedor)) vendedoresAusentes.push(vendedor);
   for (const chave in escala) {
     escala[chave] = escala[chave].filter(v => v !== vendedor);
   }
-
-  // Não reseta o indiceFila — apenas ajusta se necessário
   const { vendedoresAgora } = getEstadoAtual();
-  if (vendedoresAgora.length > 0) {
-    indiceFila = indiceFila % vendedoresAgora.length;
-  } else {
-    indiceFila = 0;
-  }
-
+  indiceFila = vendedoresAgora.length > 0 ? indiceFila % vendedoresAgora.length : 0;
   salvarEstado();
   res.json({ success: true, ausentes: vendedoresAusentes });
 });
@@ -187,22 +190,15 @@ app.post('/ausente', (req, res) => {
 app.post('/retornar', (req, res) => {
   const { vendedor } = req.body;
   if (!vendedor) return res.json({ success: false, message: "Vendedor não informado." });
-
-  // Remove da lista de ausentes
   vendedoresAusentes = vendedoresAusentes.filter(v => v !== vendedor);
-
-  // Reinsere na escala padrão somente nas chaves onde deveria estar
-  // e somente se ainda não estiver lá
   for (const chave in ESCALA_PADRAO) {
     if (ESCALA_PADRAO[chave].includes(vendedor) && !escala[chave].includes(vendedor)) {
-      // Reinsere na posição original da escala padrão
-      const posOriginal = ESCALA_PADRAO[chave].indexOf(vendedor);
-      const novaLista   = [...escala[chave]];
-      novaLista.splice(posOriginal, 0, vendedor);
-      escala[chave] = novaLista;
+      const pos = ESCALA_PADRAO[chave].indexOf(vendedor);
+      const nova = [...escala[chave]];
+      nova.splice(pos, 0, vendedor);
+      escala[chave] = nova;
     }
   }
-
   indiceFila = 0;
   salvarEstado();
   res.json({ success: true, ausentes: vendedoresAusentes });
@@ -230,50 +226,40 @@ app.post('/salvar-ordem-exata', (req, res) => {
 
 app.post('/reordenar', (req, res) => {
   const { chaveEscala, vendedoresAgora } = getEstadoAtual();
-  if (vendedoresAgora.length <= 1) {
-    return res.json({ success: false, message: "Apenas um vendedor na lista." });
-  }
-  let vendedores = [...vendedoresAgora];
-  const idxAtual = indiceFila % vendedores.length;
-  vendedores = [...vendedores.slice(idxAtual), ...vendedores.slice(0, idxAtual)];
-  vendedores.push(vendedores.shift());
-  escala[chaveEscala] = vendedores;
+  if (vendedoresAgora.length <= 1) return res.json({ success: false, message: "Apenas um vendedor na lista." });
+  let v = [...vendedoresAgora];
+  const idx = indiceFila % v.length;
+  v = [...v.slice(idx), ...v.slice(0, idx)];
+  v.push(v.shift());
+  escala[chaveEscala] = v;
   indiceFila = 0;
   salvarEstado();
-  res.json({ success: true, novaLista: vendedores });
+  res.json({ success: true, novaLista: v });
 });
 
 app.get('/limpar-historico', (req, res) => {
   const antes = historicoVendas.length;
   historicoVendas = historicoVendas.filter(v => v.nome && v.nome !== 'undefined');
-  const depois = historicoVendas.length;
   salvarEstado();
-  res.send(`<h1>✅ Histórico limpo!</h1><p>Removidos ${antes - depois} registros inválidos. Restaram ${depois} vendas válidas.</p>`);
+  res.send(`<h1>✅ Histórico limpo!</h1><p>Removidos ${antes - historicoVendas.length} registros inválidos.</p>`);
 });
 
 app.get('/reset-ausentes', (req, res) => {
-  // Remove todos os ausentes e restaura escala padrão para eles
   vendedoresAusentes = [];
   escala = JSON.parse(JSON.stringify(ESCALA_PADRAO));
-  // Mantém histórico e índice
   salvarEstado();
-  res.send("<h1>✅ Ausentes limpos!</h1><p>Todos os vendedores estão de volta na fila. Histórico preservado.</p>");
+  res.send("<h1>✅ Ausentes limpos!</h1><p>Todos os vendedores estão de volta. Histórico preservado.</p>");
 });
 
 app.get('/reset-geral', (req, res) => {
-  indiceFila         = 0;
-  ultimoBloco        = "";
-  historicoVendas    = [];
+  indiceFila = 0; ultimoBloco = ""; historicoVendas = [];
   vendedoresAusentes = [];
-  escala             = JSON.parse(JSON.stringify(ESCALA_PADRAO));
+  escala = JSON.parse(JSON.stringify(ESCALA_PADRAO));
   salvarEstado();
-  res.send("<h1>🔄 Sistema resetado!</h1><p>Escala voltou ao padrão e índice zerado.</p>");
+  res.send("<h1>🔄 Sistema resetado!</h1>");
 });
 
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`🚀 AmoFila rodando em http://localhost:${PORT}`);
-  });
+  app.listen(PORT, () => console.log(`🚀 AmoFila rodando em http://localhost:${PORT}`));
 }
-
 module.exports = app;

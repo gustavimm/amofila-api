@@ -586,6 +586,211 @@ body::after {
 }
 .tv-hint:hover { color: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.08); }
 
+
+/* ── OVERLAY ESCALA ── */
+#overlay-escala {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 200;
+  align-items: center; justify-content: center;
+  padding: 24px;
+}
+#overlay-escala.ativo { display: flex; }
+
+#painel-escala {
+  width: 100%; max-width: 520px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  overflow: hidden;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.escala-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.escala-titulo {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--text-mid);
+  text-transform: uppercase;
+}
+
+.escala-fechar {
+  background: none; border: none;
+  color: var(--text-mid); cursor: pointer;
+  font-size: 18px; line-height: 1;
+  padding: 2px 6px; border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+.escala-fechar:hover { color: var(--red); background: var(--red-dim); }
+
+/* Senha */
+#escala-senha-wrap {
+  padding: 28px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.senha-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: var(--text-mid);
+  text-transform: uppercase;
+}
+
+#input-senha {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 16px;
+  letter-spacing: 4px;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s;
+}
+#input-senha:focus { border-color: var(--green); }
+#input-senha.erro  { border-color: var(--red); animation: shake 0.3s ease; }
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25%     { transform: translateX(-6px); }
+  75%     { transform: translateX(6px); }
+}
+
+#btn-confirmar-senha {
+  width: 100%;
+  padding: 13px;
+  background: var(--green); color: #000;
+  border: none; border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase;
+  cursor: pointer; transition: opacity 0.15s;
+}
+#btn-confirmar-senha:hover { opacity: 0.85; }
+
+/* Editor de escala */
+#escala-editor-wrap {
+  display: none;
+  flex-direction: column;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.escala-bloco {
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--border);
+}
+.escala-bloco:last-child { border-bottom: none; }
+
+.escala-bloco-titulo {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--text-mid);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.escala-vendedores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.escala-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 6px 13px;
+  border-radius: 7px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  font-family: var(--ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-mid);
+  cursor: default;
+  transition: all 0.15s;
+}
+
+.escala-chip.ativo {
+  background: var(--green-dim);
+  border-color: rgba(0,255,65,0.25);
+  color: var(--green);
+}
+
+.escala-chip-toggle {
+  background: none; border: none;
+  color: inherit; cursor: pointer;
+  font-size: 14px; line-height: 1;
+  padding: 0; opacity: 0.6;
+  transition: opacity 0.15s;
+}
+.escala-chip-toggle:hover { opacity: 1; }
+
+.escala-footer {
+  padding: 16px 22px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+#btn-salvar-escala {
+  flex: 1; padding: 13px;
+  background: var(--green); color: #000;
+  border: none; border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase;
+  cursor: pointer; transition: opacity 0.15s;
+}
+#btn-salvar-escala:hover { opacity: 0.85; }
+
+#btn-cancelar-escala {
+  padding: 13px 18px;
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--text-mid);
+  border-radius: 8px;
+  font-family: var(--ui);
+  font-size: 12px; font-weight: 500;
+  letter-spacing: 1px; text-transform: uppercase;
+  cursor: pointer; transition: all 0.15s;
+}
+#btn-cancelar-escala:hover { border-color: var(--border); color: var(--text); }
+
+/* Botão footer escala */
+#btn-escala {
+  font-family: var(--mono);
+  font-size: 9px; letter-spacing: 3px;
+  color: var(--text-dim);
+  background: none;
+  border: 1px solid var(--border);
+  padding: 6px 14px; border-radius: 4px;
+  cursor: pointer; text-transform: uppercase;
+  transition: color 0.15s, border-color 0.15s;
+}
+#btn-escala:hover { color: var(--text-mid); border-color: var(--border2); }
+
 /* ── TOAST ── */
 #toast {
   position: fixed; bottom: 26px; left: 50%;
@@ -682,6 +887,7 @@ body::after {
   <div id="footer">
     <span class="footer-txt">AMO FILA v2.0</span>
     <button id="btn-tv" onclick="abrirTV()">◉ MODO TV</button>
+    <button id="btn-escala" onclick="abrirEscala()">⚙ ESCALA</button>
   </div>
 
 </div>
@@ -1008,6 +1214,106 @@ function retornar(nome) {
     body: JSON.stringify({ vendedor: nome })
   }).then(r => r.json()).then(d => {
     if (d.success) { toast(`${nome} — RETORNOU ✓`); renderAusentes(d.ausentes); buscarVez(); }
+  });
+}
+
+
+// ── PAINEL DE ESCALA ──
+const SENHA_GESTOR = 'amo2025';
+const BLOCOS_LABELS = {
+  "08": "08:00 — Manhã",
+  "09": "09:00 — Manhã",
+  "10": "10:00 — Manhã",
+  "11": "11:00 — 16:59",
+  "17": "17:00 — Tarde",
+  "18": "18:00 — Noite",
+  "fora": "Fora do Expediente"
+};
+
+let escalaEditavel = {};
+let todosVendedores = [];
+
+function abrirEscala() {
+  document.getElementById('overlay-escala').classList.add('ativo');
+  document.getElementById('escala-senha-wrap').style.display = 'flex';
+  document.getElementById('escala-editor-wrap').style.display = 'none';
+  document.getElementById('input-senha').value = '';
+  setTimeout(() => document.getElementById('input-senha').focus(), 100);
+}
+
+function fecharEscala() {
+  document.getElementById('overlay-escala').classList.remove('ativo');
+  escalaEditavel = {};
+}
+
+function confirmarSenha() {
+  const senha = document.getElementById('input-senha').value;
+  if (senha !== SENHA_GESTOR) {
+    const inp = document.getElementById('input-senha');
+    inp.classList.add('erro');
+    setTimeout(() => inp.classList.remove('erro'), 400);
+    return;
+  }
+  // Carrega escala do servidor
+  fetch('/escala')
+    .then(r => r.json())
+    .then(d => {
+      todosVendedores = d.todos;
+      // Cópia profunda para edição
+      escalaEditavel = {};
+      for (const chave in d.escala) {
+        escalaEditavel[chave] = [...d.escala[chave]];
+      }
+      document.getElementById('escala-senha-wrap').style.display = 'none';
+      document.getElementById('escala-editor-wrap').style.display = 'flex';
+      renderBlocosEscala();
+    });
+}
+
+function renderBlocosEscala() {
+  const container = document.getElementById('blocos-escala');
+  container.innerHTML = Object.keys(BLOCOS_LABELS).map(chave => {
+    const ativos = escalaEditavel[chave] || [];
+    const chips = todosVendedores.map(nome => {
+      const ativo = ativos.includes(nome);
+      return `<div class="escala-chip ${ativo ? 'ativo' : ''}" data-chave="${chave}" data-nome="${nome}">
+        ${nome}
+        <button class="escala-chip-toggle" onclick="toggleVendedorEscala('${chave}','${nome}')">
+          ${ativo ? '×' : '+'}
+        </button>
+      </div>`;
+    }).join('');
+    return `<div class="escala-bloco">
+      <p class="escala-bloco-titulo">${BLOCOS_LABELS[chave]}</p>
+      <div class="escala-vendedores">${chips}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleVendedorEscala(chave, nome) {
+  if (!escalaEditavel[chave]) escalaEditavel[chave] = [];
+  const idx = escalaEditavel[chave].indexOf(nome);
+  if (idx === -1) {
+    escalaEditavel[chave].push(nome);
+  } else {
+    escalaEditavel[chave].splice(idx, 1);
+  }
+  renderBlocosEscala();
+}
+
+function salvarEscala() {
+  fetch('/salvar-escala', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ novaEscala: escalaEditavel })
+  }).then(r => r.json()).then(d => {
+    if (d.success) {
+      toast('ESCALA SALVA ✓');
+      fecharEscala();
+      buscarVez();
+    } else {
+      alert('Erro ao salvar: ' + d.message);
+    }
   });
 }
 
