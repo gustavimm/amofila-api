@@ -892,6 +892,30 @@ body::after {
 
 </div>
 
+
+<!-- OVERLAY ESCALA -->
+<div id="overlay-escala">
+  <div id="painel-escala">
+    <div class="escala-header">
+      <span class="escala-titulo">CONFIGURAR ESCALA</span>
+      <button class="escala-fechar" onclick="fecharEscala()">×</button>
+    </div>
+    <div id="escala-senha-wrap">
+      <p class="senha-label">SENHA DO GESTOR</p>
+      <input type="password" id="input-senha" placeholder="••••" maxlength="20"
+        onkeydown="if(event.key==='Enter') confirmarSenha()">
+      <button id="btn-confirmar-senha" onclick="confirmarSenha()">ENTRAR</button>
+    </div>
+    <div id="escala-editor-wrap">
+      <div id="blocos-escala"></div>
+      <div class="escala-footer">
+        <button id="btn-salvar-escala" onclick="salvarEscala()">SALVAR ESCALA</button>
+        <button id="btn-cancelar-escala" onclick="fecharEscala()">CANCELAR</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="overlay-tv">
   <p class="tv-eyebrow">vez de vender</p>
   <div id="tv-nome">—</div>
