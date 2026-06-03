@@ -34,7 +34,7 @@ function toast(msg) {
   el._t = setTimeout(() => el.classList.remove('show'), 2600);
 }
 
-// ── RENDER FILA (chips) ──
+// ── RENDER FILA ──
 function renderFila(lista, atual) {
   const el = document.getElementById('lista-fila');
   if (!lista?.length) { el.innerHTML = '<p class="vazio">FILA VAZIA</p>'; return; }
@@ -51,7 +51,8 @@ function renderFila(lista, atual) {
 function renderPlacar(hist) {
   const el  = document.getElementById('lista-placar');
   const cnt = {};
-  hist.filter(v => v.nome && v.nome !== 'undefined').forEach(v => { cnt[v.nome] = (cnt[v.nome] || 0) + 1; });
+  hist.filter(v => v.nome && v.nome !== 'undefined')
+      .forEach(v => { cnt[v.nome] = (cnt[v.nome] || 0) + 1; });
   const ord = Object.entries(cnt).sort((a,b) => b[1]-a[1]);
   if (!ord.length) { el.innerHTML = '<p class="vazio">SEM VENDAS AINDA</p>'; return; }
   const max = ord[0][1];
@@ -69,7 +70,6 @@ function renderPlacar(hist) {
 // ── RENDER HISTÓRICO ──
 function renderHistorico(hist) {
   const el = document.getElementById('scroll-historico');
-  if (!hist.length) { el.innerHTML = '<p class="vazio">NENHUM REGISTRO</p>'; return; }
   hist = hist.filter(v => v.nome && v.nome !== 'undefined');
   if (!hist.length) { el.innerHTML = '<p class="vazio">NENHUM REGISTRO</p>'; return; }
   el.innerHTML = hist.map((v, i) => `
@@ -128,7 +128,7 @@ function buscarVez() {
         setTimeout(() => { nomeEl.textContent = d.vendedor; }, 150);
       }
 
-      document.getElementById('tv-nome').textContent   = d.vendedor;
+      document.getElementById('tv-nome').textContent    = d.vendedor;
       document.getElementById('horario-val').textContent = d.horario;
 
       const badge = document.getElementById('horario-badge');
@@ -152,7 +152,10 @@ function buscarVez() {
 function proximaVenda() {
   fetch('/proximo', { method: 'POST' })
     .then(r => r.json())
-    .then(d => { if (d.success) { toast('VENDA REGISTRADA ✓'); buscarVez(); } });
+    .then(d => {
+      if (d.success) { toast('VENDA REGISTRADA ✓'); buscarVez(); }
+      else toast('FILA VAZIA — NINGUÉM NA VEZ');
+    });
 }
 
 function voltarVez() {
@@ -207,15 +210,12 @@ function fecharTV() {
 }
 function _tvKey(e) { if (e.key === 'Escape') fecharTV(); }
 
-
 // ── RESET DIÁRIO NO FRONTEND ──
 function agendarResetFrontend() {
-  const agora = new Date();
+  const agora  = new Date();
   const amanha = new Date();
   amanha.setFullYear(agora.getFullYear(), agora.getMonth(), agora.getDate() + 1);
   amanha.setHours(0, 0, 0, 0);
-
-  const msAteMeiaNoite = amanha - agora;
 
   setTimeout(() => {
     localStorage.removeItem('amofila_inicio_vez');
@@ -224,12 +224,11 @@ function agendarResetFrontend() {
     vendedorAnterior = '';
     buscarVez();
     agendarResetFrontend();
-  }, msAteMeiaNoite);
+  }, amanha - agora);
 }
-
-agendarResetFrontend();
 
 // ── INIT ──
 buscarVez();
 fetch('/ausentes').then(r => r.json()).then(d => renderAusentes(d.ausentes)).catch(()=>{});
 setInterval(buscarVez, 5000);
+agendarResetFrontend();

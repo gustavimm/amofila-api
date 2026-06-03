@@ -14,8 +14,10 @@
 
 <div id="wrap">
 
-  <img src="logo-amo.png" alt="AMO" class="logo-img">
-  <div id="relogio">--:--:--</div>
+  <div id="header">
+    <img src="logo-amo.png" alt="AMO" class="logo-img">
+    <span id="relogio">--:--:--</span>
+  </div>
 
   <div class="card">
 
@@ -39,7 +41,9 @@
     <!-- BOTÕES -->
     <div class="card-section" id="sec-btns">
       <button id="btn-venda" onclick="proximaVenda()">PEGUEI VENDA</button>
-      <button id="btn-desfazer" onclick="voltarVez()" style="margin-top:8px;">↩ DESFAZER ÚLTIMA VENDA</button>
+      <button id="btn-desfazer" onclick="voltarVez()" style="margin-top:8px;">
+        ↩ DESFAZER ÚLTIMA VENDA
+      </button>
     </div>
 
     <!-- ORDENAR FILA -->
@@ -77,18 +81,25 @@
   </div>
 
   <div id="footer">
-    <span class="footer-txt">AMO FILA v2.0</span>
-    <button id="btn-tv" onclick="abrirTV()">◉ MODO TV</button>
-    <button id="btn-escala" onclick="abrirEscala()">⚙ ESCALA</button>
+    <span class="footer-txt">AMO FILA v3.0</span>
+    <button class="footer-btn" onclick="abrirTV()">◉ TV</button>
+    <button class="footer-btn" onclick="abrirEscala()">⚙ GESTOR</button>
   </div>
 
 </div>
 
-<!-- OVERLAY ESCALA -->
-<div id="overlay-escala">
+<!-- MODO TV -->
+<div id="overlay-tv" class="overlay">
+  <p class="tv-eyebrow">vez de vender</p>
+  <div id="tv-nome">—</div>
+  <button class="tv-hint" onclick="fecharTV()">ESC — FECHAR</button>
+</div>
+
+<!-- PAINEL GESTOR -->
+<div id="overlay-escala" class="overlay">
   <div id="painel-escala">
     <div class="escala-header">
-      <span class="escala-titulo">CONFIGURAR ESCALA</span>
+      <span class="escala-titulo">PAINEL DO GESTOR</span>
       <button class="escala-fechar" onclick="fecharEscala()">×</button>
     </div>
     <div id="escala-senha-wrap">
@@ -98,6 +109,10 @@
       <button id="btn-confirmar-senha" onclick="confirmarSenha()">ENTRAR</button>
     </div>
     <div id="escala-editor-wrap">
+      <div class="escala-resets">
+        <button class="btn-reset-ausentes" onclick="resetAusentes()">↩ RESETAR AUSENTES</button>
+        <button class="btn-reset-geral" onclick="resetGeral()">⚠ RESET GERAL</button>
+      </div>
       <div id="blocos-escala"></div>
       <div class="escala-footer">
         <button id="btn-salvar-escala" onclick="salvarEscala()">SALVAR ESCALA</button>
@@ -107,18 +122,11 @@
   </div>
 </div>
 
-<!-- MODO TV -->
-<div id="overlay-tv">
-  <p class="tv-eyebrow">vez de vender</p>
-  <div id="tv-nome">—</div>
-  <button class="tv-hint" onclick="fecharTV()">ESC — FECHAR</button>
-</div>
-
 <!-- TOAST -->
 <div id="toast"></div>
 
-<script src="js/app.js"></script>
 <script src="js/dragdrop.js"></script>
 <script src="js/escala.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>

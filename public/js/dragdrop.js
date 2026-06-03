@@ -31,7 +31,6 @@ function _buildDragList() {
   });
 }
 
-// Desktop
 function _onDragStart(e) {
   dragSrc = this;
   this.classList.add('dragging');
@@ -56,7 +55,6 @@ function _onDragEnd() {
   document.querySelectorAll('.drag-item').forEach(i => i.classList.remove('dragging','drag-over'));
 }
 
-// Mobile touch
 let _touchItem = null, _touchClone = null, _touchFromIdx = null;
 
 function _onTouchStart(e) {

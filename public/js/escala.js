@@ -1,13 +1,12 @@
-// ── PAINEL DE ESCALA ──
+// ── PAINEL DO GESTOR ──
 const SENHA_GESTOR = 'amo2025';
 const BLOCOS_LABELS = {
-  "08": "08:00 — Manhã",
-  "09": "09:00 — Manhã",
-  "10": "10:00 — Manhã",
-  "11": "11:00 — 16:59",
-  "17": "17:00 — Tarde",
-  "18": "18:00 — Noite",
-  "fora": "Fora do Expediente"
+  "08": "08:00 — Gustavo, Isabella, Lavinia",
+  "09": "09:00 — Luis, Tifani, Amanda",
+  "10": "10:00 — Lucas, Ana Carolina",
+  "11": "11:00 às 16:59 — Todos",
+  "17": "17:00 — Luis, Tifani, Amanda, Lucas, Ana Carolina",
+  "18": "18:00 — Lucas, Ana Carolina"
 };
 
 let escalaEditavel = {};
@@ -39,8 +38,12 @@ function confirmarSenha() {
     .then(d => {
       todosVendedores = d.todos;
       escalaEditavel = {};
-      for (const chave in d.escala) {
-        escalaEditavel[chave] = [...d.escala[chave]];
+      for (const chave in d.filaAtual) {
+        escalaEditavel[chave] = [...d.filaAtual[chave]];
+      }
+      // Garante que todos os blocos existem
+      for (const chave in d.blocos) {
+        if (!escalaEditavel[chave]) escalaEditavel[chave] = [...d.blocos[chave]];
       }
       document.getElementById('escala-senha-wrap').style.display = 'none';
       document.getElementById('escala-editor-wrap').style.display = 'flex';
@@ -50,29 +53,7 @@ function confirmarSenha() {
 
 function renderBlocosEscala() {
   const container = document.getElementById('blocos-escala');
-
-  // Seção de resets no topo do editor
-  const htmlResets = `
-    <div style="padding: 16px 22px; border-bottom: 1px solid var(--border); display: flex; gap: 8px;">
-      <button onclick="resetAusentes()" style="
-        flex:1; padding:11px; background:none;
-        border:1px solid rgba(255,184,0,0.3); color:var(--amber);
-        border-radius:8px; font-family:var(--mono); font-size:10px;
-        font-weight:700; letter-spacing:2px; text-transform:uppercase;
-        cursor:pointer; transition:all 0.15s;">
-        ↩ RESETAR AUSENTES
-      </button>
-      <button onclick="resetGeral()" style="
-        flex:1; padding:11px; background:none;
-        border:1px solid rgba(255,59,59,0.3); color:var(--red);
-        border-radius:8px; font-family:var(--mono); font-size:10px;
-        font-weight:700; letter-spacing:2px; text-transform:uppercase;
-        cursor:pointer; transition:all 0.15s;">
-        ⚠ RESET GERAL
-      </button>
-    </div>`;
-
-  container.innerHTML = htmlResets + Object.keys(BLOCOS_LABELS).map(chave => {
+  container.innerHTML = Object.keys(BLOCOS_LABELS).map(chave => {
     const ativos = escalaEditavel[chave] || [];
     const chips = todosVendedores.map(nome => {
       const ativo = ativos.includes(nome);
@@ -105,19 +86,20 @@ function salvarEscala() {
     body: JSON.stringify({ novaEscala: escalaEditavel })
   }).then(r => r.json()).then(d => {
     if (d.success) { toast('ESCALA SALVA ✓'); fecharEscala(); buscarVez(); }
-    else alert('Erro ao salvar: ' + d.message);
+    else alert('Erro ao salvar: ' + (d.message || ''));
   });
 }
 
 function resetAusentes() {
   if (!confirm('Devolver todos os ausentes para a fila?')) return;
   fetch('/reset-ausentes')
-    .then(r => r.json ? r : r)
+    .then(r => r.json())
     .then(() => { toast('AUSENTES RESETADOS ✓'); fecharEscala(); buscarVez(); });
 }
 
 function resetGeral() {
-  if (!confirm('⚠️ RESET GERAL — apaga histórico, placar e reinicia a fila do zero. Tem certeza?')) return;
+  if (!confirm('⚠️ RESET GERAL — apaga histórico, placar e reinicia tudo. Tem certeza?')) return;
   fetch('/reset-geral')
+    .then(r => r.json())
     .then(() => { toast('SISTEMA RESETADO ✓'); fecharEscala(); buscarVez(); });
 }
