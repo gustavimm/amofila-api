@@ -259,6 +259,32 @@ app.get('/reset-geral', (req, res) => {
   res.send("<h1>🔄 Sistema resetado!</h1>");
 });
 
+
+// ── RESET DIÁRIO À MEIA-NOITE ──
+function agendarResetDiario() {
+  const agora = new Date();
+  const amanha = new Date();
+  amanha.setFullYear(agora.getFullYear(), agora.getMonth(), agora.getDate() + 1);
+  amanha.setHours(0, 0, 0, 0);
+
+  const msAteMeiaNoite = amanha - agora;
+
+  setTimeout(() => {
+    historicoVendas    = [];
+    indiceFila         = 0;
+    ultimoBloco        = "";
+    vendedoresAusentes = [];
+    escala             = JSON.parse(JSON.stringify(ESCALA_PADRAO));
+    salvarEstado();
+    console.log('🌅 Reset diário executado:', new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }));
+    agendarResetDiario(); // Agenda o próximo
+  }, msAteMeiaNoite);
+
+  console.log(`⏰ Reset diário agendado em ${Math.round(msAteMeiaNoite / 1000 / 60)} minutos.`);
+}
+
+agendarResetDiario();
+
 if (require.main === module) {
   app.listen(PORT, () => console.log(`🚀 AmoFila rodando em http://localhost:${PORT}`));
 }

@@ -207,6 +207,28 @@ function fecharTV() {
 }
 function _tvKey(e) { if (e.key === 'Escape') fecharTV(); }
 
+
+// ── RESET DIÁRIO NO FRONTEND ──
+function agendarResetFrontend() {
+  const agora = new Date();
+  const amanha = new Date();
+  amanha.setFullYear(agora.getFullYear(), agora.getMonth(), agora.getDate() + 1);
+  amanha.setHours(0, 0, 0, 0);
+
+  const msAteMeiaNoite = amanha - agora;
+
+  setTimeout(() => {
+    localStorage.removeItem('amofila_inicio_vez');
+    localStorage.removeItem('amofila_vendedor_vez');
+    inicioVez = Date.now();
+    vendedorAnterior = '';
+    buscarVez();
+    agendarResetFrontend();
+  }, msAteMeiaNoite);
+}
+
+agendarResetFrontend();
+
 // ── INIT ──
 buscarVez();
 fetch('/ausentes').then(r => r.json()).then(d => renderAusentes(d.ausentes)).catch(()=>{});
