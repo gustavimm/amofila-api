@@ -68,10 +68,10 @@ AmoFila.initCronometro = function() {
   setInterval(updateCrono, 1000);
 };
 
-AmoFila.resetarCronometro = function() {
+AmoFila.resetarCronometro = function(novoVendedor) {
   this.state.inicioVez = Date.now();
   localStorage.setItem('amofila_inicio_vez', this.state.inicioVez);
-  localStorage.setItem('amofila_vendedor_vez', this.state.vendedorAnterior);
+  localStorage.setItem('amofila_vendedor_vez', novoVendedor ?? this.state.vendedorAnterior);
 };
 
 // ── UI / RENDERS ──
@@ -167,9 +167,9 @@ AmoFila.buscarVez = async function() {
     if (mudou) {
       this.dom.som.volume = 0.35;
       this.dom.som.play().catch(() => {});
-      this.resetarCronometro();
+      this.resetarCronometro(d.vendedor);
     } else if (this.state.vendedorAnterior === '' && vendedorSalvo !== d.vendedor) {
-      this.resetarCronometro();
+      this.resetarCronometro(d.vendedor);
     }
 
     this.state.vendedorAnterior = d.vendedor;

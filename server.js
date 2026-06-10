@@ -4,14 +4,14 @@ const path    = require('path');
 const app     = express();
 const PORT    = process.env.PORT || 3000;
 
-// ── VENDEDORES ──
+// ── VENDEDORES POR TURNO ──
 const VENDEDORES = {
-  manha1:  ["Gustavo", "Isabella", "Lavinia"],   // 08h
-  manha2:  ["Luis", "Tifani", "Amanda"],          // 09h
-  manha3:  ["Lucas", "Ana Carolina"],             // 10h
-  tarde:   ["Luis", "Tifani", "Amanda", "Lucas", "Ana Carolina"], // 17h
-  noite:   ["Lucas", "Ana Carolina"],             // 18h
-  todos:   ["Gustavo", "Isabella", "Lavinia", "Luis", "Tifani", "Amanda", "Lucas", "Ana Carolina"]
+  manha1: ["Gustavo", "Isabella", "Lavinia"],
+  manha2: ["Luis", "Tifani", "Amanda"],
+  manha3: ["Lucas", "Ana Carolina"],
+  todos:  ["Gustavo", "Isabella", "Lavinia", "Luis", "Tifani", "Amanda", "Lucas", "Ana Carolina"],
+  tarde:  ["Luis", "Tifani", "Amanda", "Lucas", "Ana Carolina"],
+  noite:  ["Lucas", "Ana Carolina"],
 };
 
 // ── PERSISTÊNCIA ──
@@ -25,7 +25,7 @@ function carregarEstado() {
       return estado;
     }
   } catch (err) {
-    console.warn('⚠️ Não foi possível ler estado.json:', err.message);
+    console.warn('⚠️ Erro ao ler estado.json:', err.message);
   }
   return null;
 }
@@ -35,41 +35,14 @@ function salvarEstado() {
     fs.writeFileSync(ARQUIVO_ESTADO, JSON.stringify({
       indiceFila,
       ultimoBloco,
-      inicioVezTimestamp, // Novo: Salva quando a vez começou
       historicoVendas,
       vendedoresAusentes,
       filaAtual,
-      diaRodizio,
+      vezPausada, // ⬅ guarda quem estava na vez antes do "retornado" entrar
     }, null, 2));
   } catch (err) {
     console.error('❌ Erro ao salvar estado:', err.message);
   }
-}
-
-// ── AUXILIARES DE DATA E HORÁRIO (SÃO PAULO) ──
-function getOffsetDia() {
-  const agora = new Date();
-  const diaSemana = new Date(agora.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })).getDay();
-  return diaSemana === 0 ? 6 : diaSemana - 1; // Segunda = 0
-}
-
-function getDiaAtual() {
-  const agora = new Date();
-  return agora.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
-}
-
-function gerarFilaComRodizio(lista) {
-  const offset = getOffsetDia() % lista.length;
-  return [...lista.slice(offset), ...lista.slice(0, offset)];
-}
-
-// ── SEGURANÇA: MIDDLEWARE DE AUTENTICAÇÃO DO GESTOR ──
-function verificarSenhaGestor(req, res, next) {
-  const senha = req.headers['x-manager-password'];
-  if (senha === 'amo2025') {
-    return next();
-  }
-  return res.status(401).json({ success: false, message: 'Acesso negado: Senha do gestor inválida.' });
 }
 
 // ── ESTADO INICIAL ──
@@ -77,30 +50,15 @@ const estadoSalvo = carregarEstado();
 
 let indiceFila         = estadoSalvo?.indiceFila         ?? 0;
 let ultimoBloco        = estadoSalvo?.ultimoBloco        ?? "";
-let inicioVezTimestamp = estadoSalvo?.inicioVezTimestamp ?? Date.now(); // Referência central do cronômetro
+let historicoVendas    = estadoSalvo?.historicoVendas    ?? [];
 let vendedoresAusentes = estadoSalvo?.vendedoresAusentes ?? [];
-let diaRodizio         = estadoSalvo?.diaRodizio         ?? getDiaAtual();
+let filaAtual          = estadoSalvo?.filaAtual          ?? {};
+let vezPausada         = estadoSalvo?.vezPausada         ?? null;
+// vezPausada = { vendedorOriginal: "Amanda", chave: "11" }
+// Significa: "tem alguém retornado na frente, mas depois que ele pegar
+//             a venda, a vez deve voltar pra Amanda"
 
-// Correção de compatibilidade: lê 'filaAtual' ou a antiga chave 'escala'
-let filaAtual          = estadoSalvo?.filaAtual          ?? estadoSalvo?.escala ?? {};
-
-// Sanitização: limpa registros corrompidos (sem nome) vindos do arquivo antigo
-let historicoVendas    = (estadoSalvo?.historicoVendas   ?? []).filter(v => v && v.nome && v.nome !== 'undefined');
-
-// Verificação de virada de dia automática no boot do servidor
-if (diaRodizio !== getDiaAtual()) {
-  console.log('📅 Novo dia detectado no boot — limpando tabelas.');
-  filaAtual = {};
-  indiceFila = 0;
-  ultimoBloco = "";
-  inicioVezTimestamp = Date.now();
-  historicoVendas = [];
-  vendedoresAusentes = [];
-  diaRodizio = getDiaAtual();
-  salvarEstado();
-}
-
-// Reaplica ausentes nas filas carregadas
+// Reaplica ausentes nas filas salvas
 if (vendedoresAusentes.length > 0) {
   for (const chave in filaAtual) {
     filaAtual[chave] = filaAtual[chave].filter(v => !vendedoresAusentes.includes(v));
@@ -110,7 +68,7 @@ if (vendedoresAusentes.length > 0) {
 app.use(express.static('public'));
 app.use(express.json());
 
-// ── LOGICA DE FILAS E TURNOS ──
+// ── HELPERS ──
 function getChaveAtual(horaReal) {
   if (horaReal === 8)                  return "08";
   if (horaReal === 9)                  return "09";
@@ -133,10 +91,10 @@ function getListaBase(chave) {
   }
 }
 
+// Garante que a fila daquele bloco existe — se não existe, cria com a base
 function getFilaDoBloco(chave) {
   if (!filaAtual[chave]) {
-    const base = getListaBase(chave);
-    filaAtual[chave] = gerarFilaComRodizio(base).filter(v => !vendedoresAusentes.includes(v));
+    filaAtual[chave] = getListaBase(chave).filter(v => !vendedoresAusentes.includes(v));
     salvarEstado();
   }
   return filaAtual[chave];
@@ -154,51 +112,74 @@ function getEstadoAtual() {
   return { chaveEscala, lista, vendedor, horaBrasilia, horaLog };
 }
 
-// ── ROTAS PÚBLICAS ──
+// ── ROTAS ──
 
 app.get('/vez', (req, res) => {
   const { chaveEscala, lista, vendedor, horaBrasilia } = getEstadoAtual();
 
-  // Se houve virada de bloco de horário
+  // Virada de bloco — ajusta índice proporcionalmente
   if (ultimoBloco !== "" && ultimoBloco !== chaveEscala) {
-    const vendedorAntigo = vendedor;
     indiceFila = lista.length > 0 ? indiceFila % lista.length : 0;
-    
-    // Se o vendedor mudou por conta da virada de turno, atualiza o timestamp do cronômetro
-    const { vendedor: novoVendedor } = getEstadoAtual();
-    if (vendedorAntigo !== novoVendedor) {
-      inicioVezTimestamp = Date.now();
-    }
     salvarEstado();
   }
   ultimoBloco = chaveEscala;
 
   res.json({
-    vendedor:      vendedor || "—",
-    horario:       `${horaBrasilia}:00`,
-    filaAtual:     lista,
-    foraDaEscala:  chaveEscala === "fora",
-    chaveAtual:    chaveEscala,
-    inicioVezTimestamp // Envia o ponto exato do início da vez para o client-side
+    vendedor:     vendedor || "—",
+    horario:      `${horaBrasilia}:00`,
+    filaAtual:    lista,
+    foraDaEscala: chaveEscala === "fora",
+    chaveAtual:   chaveEscala,
   });
 });
 
 app.get('/historico', (req, res) => res.json(historicoVendas));
 app.get('/ausentes',  (req, res) => res.json({ ausentes: vendedoresAusentes }));
 
+app.get('/escala', (req, res) => {
+  res.json({
+    filaAtual,
+    todos: VENDEDORES.todos,
+    blocos: {
+      "08": VENDEDORES.manha1,
+      "09": VENDEDORES.manha2,
+      "10": VENDEDORES.manha3,
+      "11": VENDEDORES.todos,
+      "17": VENDEDORES.tarde,
+      "18": VENDEDORES.noite,
+    }
+  });
+});
+
+// ── PEGAR VENDA ──
 app.post('/proximo', (req, res) => {
   const { lista, vendedor, horaLog, chaveEscala } = getEstadoAtual();
 
-  // Defesa absoluta: Não cria histórico se não houver vendedor ativo
-  if (!vendedor || lista.length === 0 || chaveEscala === "fora") {
-    return res.json({ success: false, message: "Ninguém na fila ou fora do horário de atendimento." });
+  if (!vendedor || lista.length === 0) {
+    return res.json({ success: false, message: "Nenhum vendedor na fila." });
   }
 
+  // Registra a venda
   historicoVendas.unshift({ nome: vendedor, hora: horaLog, bloco: chaveEscala });
   if (historicoVendas.length > 50) historicoVendas.pop();
 
-  indiceFila++;
-  inicioVezTimestamp = Date.now(); // Reinicia cronômetro central
+  // ── LÓGICA DO RETORNO DE ALMOÇO ──
+  // Se quem acabou de pegar venda é o vendedor "retornado" (está na posição 0),
+  // a vez deve VOLTAR pra quem estava antes do retorno
+  if (vezPausada && vezPausada.chave === chaveEscala && vezPausada.vendedorOriginal !== vendedor) {
+    // Remove o retornado da posição atual
+    filaAtual[chaveEscala] = lista.filter(v => v !== vendedor);
+    // Adiciona o retornado no final
+    filaAtual[chaveEscala].push(vendedor);
+    // Coloca o índice de volta no vendedor original
+    const novaPos = filaAtual[chaveEscala].indexOf(vezPausada.vendedorOriginal);
+    indiceFila = novaPos !== -1 ? novaPos : 0;
+    vezPausada = null;
+  } else {
+    // Comportamento normal — avança o índice
+    indiceFila++;
+  }
+
   salvarEstado();
   res.json({ success: true });
 });
@@ -207,7 +188,6 @@ app.post('/voltar-vez', (req, res) => {
   if (indiceFila > 0) {
     indiceFila--;
     if (historicoVendas.length > 0) historicoVendas.shift();
-    inicioVezTimestamp = Date.now(); // Reseta cronômetro ao voltar a vez
     salvarEstado();
     res.json({ success: true });
   } else {
@@ -215,11 +195,21 @@ app.post('/voltar-vez', (req, res) => {
   }
 });
 
+app.post('/excluir-venda', (req, res) => {
+  const { index } = req.body;
+  if (index !== undefined && index >= 0 && index < historicoVendas.length) {
+    historicoVendas.splice(index, 1);
+    salvarEstado();
+    res.json({ success: true });
+  } else {
+    res.json({ success: false });
+  }
+});
+
+// ── MARCAR AUSENTE ──
 app.post('/ausente', (req, res) => {
   const { vendedor } = req.body;
   if (!vendedor) return res.json({ success: false, message: "Vendedor não informado." });
-
-  const { vendedor: vendedorAntes } = getEstadoAtual();
 
   if (!vendedoresAusentes.includes(vendedor)) {
     vendedoresAusentes.push(vendedor);
@@ -229,57 +219,54 @@ app.post('/ausente', (req, res) => {
     filaAtual[chave] = filaAtual[chave].filter(v => v !== vendedor);
   }
 
-  const { lista, vendedor: vendedorDepois } = getEstadoAtual();
+  const { lista } = getEstadoAtual();
   indiceFila = lista.length > 0 ? indiceFila % lista.length : 0;
-
-  // Se o vendedor removido era quem estava na vez, reseta o cronômetro para o próximo
-  if (vendedorAntes === vendedor || vendedorAntes !== vendedorDepois) {
-    inicioVezTimestamp = Date.now();
-  }
 
   salvarEstado();
   res.json({ success: true, ausentes: vendedoresAusentes });
 });
 
+// ── RETORNAR DO ALMOÇO ──
+// Vai pra posição 1 (vez) e guarda quem estava antes
 app.post('/retornar', (req, res) => {
   const { vendedor } = req.body;
   if (!vendedor) return res.json({ success: false, message: "Vendedor não informado." });
 
   vendedoresAusentes = vendedoresAusentes.filter(v => v !== vendedor);
-  const { chaveEscala, lista, vendedor: vendedorAntes } = getEstadoAtual();
 
+  const { chaveEscala, lista, vendedor: vendedorAtual } = getEstadoAtual();
+
+  // Insere em todas as filas onde o vendedor deveria estar
   for (const chave in filaAtual) {
     const listaBase = getListaBase(chave);
     if (!listaBase.includes(vendedor)) continue;
     if (filaAtual[chave].includes(vendedor)) continue;
 
-    const fila = [...filaAtual[chave]];
-
     if (chave === chaveEscala) {
-      const posAtual = lista.length > 0 ? indiceFila % lista.length : 0;
-      fila.splice(posAtual + 1, 0, vendedor); // Entra logo após a vez atual (Regra do Almoço)
-    } else {
-      fila.unshift(vendedor);
-    }
-    filaAtual[chave] = fila;
-  }
+      // No bloco atual: insere NA POSIÇÃO 1 (vez)
+      const novaFila = [...filaAtual[chave]];
+      const posVez = lista.length > 0 ? indiceFila % lista.length : 0;
+      novaFila.splice(posVez, 0, vendedor);
+      filaAtual[chave] = novaFila;
 
-  const { vendedor: vendedorDepois } = getEstadoAtual();
-  if (vendedorAntes !== vendedorDepois) {
-    inicioVezTimestamp = Date.now();
+      // GUARDA quem estava na vez antes — pra voltar depois que o retornado pegar venda
+      vezPausada = { vendedorOriginal: vendedorAtual, chave: chaveEscala };
+    } else {
+      // Outros blocos: insere no final
+      filaAtual[chave].push(vendedor);
+    }
   }
 
   salvarEstado();
   res.json({ success: true, ausentes: vendedoresAusentes });
 });
 
-// ── ROTAS PROTEGIDAS (REQUEREM SENHA DO GESTOR NO HEADER) ──
-
-app.post('/salvar-ordem-exata', verificarSenhaGestor, (req, res) => {
+// ── ORDENAR FILA MANUALMENTE (drag and drop) ──
+app.post('/salvar-ordem-exata', (req, res) => {
   const { novaOrdem } = req.body;
-  const { chaveEscala, vendedor: vendedorAntes } = getEstadoAtual();
+  const { chaveEscala, vendedor } = getEstadoAtual();
 
-  const novaPosicao = novaOrdem.indexOf(vendedorAntes);
+  const novaPosicao = novaOrdem.indexOf(vendedor);
   filaAtual[chaveEscala] = novaOrdem;
   indiceFila = novaPosicao !== -1 ? novaPosicao : 0;
 
@@ -287,7 +274,8 @@ app.post('/salvar-ordem-exata', verificarSenhaGestor, (req, res) => {
   res.json({ success: true, novaLista: novaOrdem });
 });
 
-app.post('/salvar-escala', verificarSenhaGestor, (req, res) => {
+// ── EDITAR ESCALA (painel do gestor) ──
+app.post('/salvar-escala', (req, res) => {
   const { novaEscala } = req.body;
   if (!novaEscala) return res.json({ success: false });
 
@@ -303,46 +291,37 @@ app.post('/salvar-escala', verificarSenhaGestor, (req, res) => {
   res.json({ success: true });
 });
 
-app.post('/excluir-venda', verificarSenhaGestor, (req, res) => {
-  const { index } = req.body;
-  if (index !== undefined && index >= 0 && index < historicoVendas.length) {
-    historicoVendas.splice(index, 1);
-    salvarEstado();
-    res.json({ success: true });
-  } else {
-    res.json({ success: false });
-  }
-});
-
-app.get('/reset-ausentes', verificarSenhaGestor, (req, res) => {
+// ── RESETS ──
+app.get('/reset-ausentes', (req, res) => {
   vendedoresAusentes = [];
   filaAtual = {};
   indiceFila = 0;
   ultimoBloco = "";
-  inicioVezTimestamp = Date.now();
+  vezPausada = null;
   salvarEstado();
-  res.json({ success: true, message: "Ausentes resetados." });
+  res.json({ success: true });
 });
 
-app.get('/reset-geral', verificarSenhaGestor, (req, res) => {
+app.get('/reset-geral', (req, res) => {
   indiceFila         = 0;
   ultimoBloco        = "";
-  inicioVezTimestamp = Date.now();
   historicoVendas    = [];
   vendedoresAusentes = [];
   filaAtual          = {};
-  diaRodizio         = getDiaAtual();
+  vezPausada         = null;
   salvarEstado();
-  res.json({ success: true, message: "Sistema resetado." });
+  res.json({ success: true });
 });
 
-app.get('/limpar-historico', verificarSenhaGestor, (req, res) => {
-  historicoVendas = [];
+app.get('/limpar-historico', (req, res) => {
+  const antes = historicoVendas.length;
+  historicoVendas = historicoVendas.filter(v => v.nome && v.nome !== 'undefined');
   salvarEstado();
-  res.json({ success: true, message: "Histórico esvaziado." });
+  res.json({ success: true, removidos: antes - historicoVendas.length });
 });
 
-// ── ROTINA AUTOMÁTICA DE MEIA-NOITE ──
+// ── RESET DIÁRIO À MEIA-NOITE ──
+// Zera histórico, placar e ausentes — MAS preserva a ordem da fila
 function agendarResetDiario() {
   const agora  = new Date();
   const amanha = new Date();
@@ -352,17 +331,17 @@ function agendarResetDiario() {
 
   setTimeout(() => {
     historicoVendas    = [];
-    indiceFila         = 0;
-    ultimoBloco        = "";
-    inicioVezTimestamp = Date.now();
     vendedoresAusentes = [];
-    filaAtual          = {};
-    diaRodizio         = getDiaAtual();
+    vezPausada         = null;
+    // ⚠ filaAtual e indiceFila NÃO resetam — mantém ordem do dia anterior
     salvarEstado();
-    console.log('🌅 Reset diário executado automaticamente.');
+    console.log('🌅 Reset diário executado:', new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }));
     agendarResetDiario();
   }, ms);
+
+  console.log(`⏰ Reset diário agendado em ${Math.round(ms / 60000)} minutos.`);
 }
+
 agendarResetDiario();
 
 if (require.main === module) {

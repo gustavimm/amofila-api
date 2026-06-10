@@ -85,7 +85,7 @@ function salvarEscala() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ novaEscala: escalaEditavel })
   }).then(r => r.json()).then(d => {
-    if (d.success) { toast('ESCALA SALVA ✓'); fecharEscala(); buscarVez(); }
+    if (d.success) { AmoFila.toast('ESCALA SALVA ✓'); fecharEscala(); AmoFila.buscarVez(); }
     else alert('Erro ao salvar: ' + (d.message || ''));
   });
 }
@@ -94,12 +94,12 @@ function resetAusentes() {
   if (!confirm('Devolver todos os ausentes para a fila?')) return;
   fetch('/reset-ausentes')
     .then(r => r.json())
-    .then(() => { toast('AUSENTES RESETADOS ✓'); fecharEscala(); buscarVez(); });
+    .then(() => { AmoFila.toast('AUSENTES RESETADOS ✓'); fecharEscala(); AmoFila.buscarVez(); });
 }
 
 function resetGeral() {
   if (!confirm('⚠️ RESET GERAL — apaga histórico, placar e reinicia tudo. Tem certeza?')) return;
   fetch('/reset-geral')
     .then(r => r.json())
-    .then(() => { toast('SISTEMA RESETADO ✓'); fecharEscala(); buscarVez(); });
+    .then(() => { AmoFila.toast('SISTEMA RESETADO ✓'); fecharEscala(); AmoFila.buscarVez(); });
 }

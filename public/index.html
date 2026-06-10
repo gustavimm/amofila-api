@@ -40,8 +40,8 @@
 
     <!-- BOTÕES -->
     <div class="card-section" id="sec-btns">
-      <button id="btn-venda" onclick="proximaVenda()">PEGUEI VENDA</button>
-      <button id="btn-desfazer" onclick="voltarVez()" style="margin-top:8px;">
+      <button id="btn-venda" onclick="AmoFila.proximaVenda()">PEGUEI VENDA</button>
+      <button id="btn-desfazer" onclick="AmoFila.voltarVez()" style="margin-top:8px;">
         ↩ DESFAZER ÚLTIMA VENDA
       </button>
     </div>
@@ -74,7 +74,7 @@
         <select id="select-ausente">
           <option value="">Marcar ausente...</option>
         </select>
-        <button id="btn-marcar-ausente" onclick="confirmarAusente()">MARCAR</button>
+        <button id="btn-marcar-ausente" onclick="AmoFila.confirmarAusente()">MARCAR</button>
       </div>
     </div>
 
