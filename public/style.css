@@ -45,6 +45,12 @@ body::before {
     linear-gradient(90deg, rgba(0,212,255,0.012) 1px, transparent 1px);
   background-size: 44px 44px;
   pointer-events: none; z-index: 0;
+  animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+  0%   { background-position: 0 0; }
+  100% { background-position: 44px 44px; }
 }
 
 body::after {
@@ -52,6 +58,10 @@ body::after {
   position: fixed; inset: 0;
   background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.85) 100%);
   pointer-events: none; z-index: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
 }
 
 /* ── WRAPPER ── */
