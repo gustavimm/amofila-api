@@ -264,11 +264,15 @@ app.post('/retornar', (req, res) => {
 // ── ORDENAR FILA MANUALMENTE (drag and drop) ──
 app.post('/salvar-ordem-exata', (req, res) => {
   const { novaOrdem } = req.body;
-  const { chaveEscala, vendedor } = getEstadoAtual();
+  if (!novaOrdem || !Array.isArray(novaOrdem)) {
+    return res.json({ success: false, message: 'novaOrdem inválida' });
+  }
 
-  const novaPosicao = novaOrdem.indexOf(vendedor);
+  const { chaveEscala } = getEstadoAtual();
+
   filaAtual[chaveEscala] = novaOrdem;
-  indiceFila = novaPosicao !== -1 ? novaPosicao : 0;
+  indiceFila = 0; // posição 0 da nova ordem é sempre a vez
+  vezPausada = null; // cancela qualquer lógica de retorno de almoço pendente
 
   salvarEstado();
   res.json({ success: true, novaLista: novaOrdem });
