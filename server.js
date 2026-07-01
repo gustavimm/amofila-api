@@ -38,7 +38,8 @@ function salvarEstado() {
       historicoVendas,
       vendedoresAusentes,
       filaAtual,
-      vezPausada, // ⬅ guarda quem estava na vez antes do "retornado" entrar
+      vezPausada,
+      ordemPersonalizada, // ⬅ persiste a ordem definida pelo gestor
     }, null, 2));
   } catch (err) {
     console.error('❌ Erro ao salvar estado:', err.message);
@@ -54,6 +55,7 @@ let historicoVendas    = estadoSalvo?.historicoVendas    ?? [];
 let vendedoresAusentes = estadoSalvo?.vendedoresAusentes ?? [];
 let filaAtual          = estadoSalvo?.filaAtual          ?? {};
 let vezPausada         = estadoSalvo?.vezPausada         ?? null;
+let ordemPersonalizada = estadoSalvo?.ordemPersonalizada ?? {}; // ⬅ ordem permanente por bloco
 // vezPausada = { vendedorOriginal: "Amanda", chave: "11" }
 // Significa: "tem alguém retornado na frente, mas depois que ele pegar
 //             a venda, a vez deve voltar pra Amanda"
@@ -91,10 +93,12 @@ function getListaBase(chave) {
   }
 }
 
-// Garante que a fila daquele bloco existe — se não existe, cria com a base
+// Garante que a fila daquele bloco existe — se não existe, cria com a ordem
+// personalizada pelo gestor (se houver) ou com a base padrão
 function getFilaDoBloco(chave) {
   if (!filaAtual[chave]) {
-    filaAtual[chave] = getListaBase(chave).filter(v => !vendedoresAusentes.includes(v));
+    const base = ordemPersonalizada[chave] ?? getListaBase(chave);
+    filaAtual[chave] = base.filter(v => !vendedoresAusentes.includes(v));
     salvarEstado();
   }
   return filaAtual[chave];
@@ -164,19 +168,13 @@ app.post('/proximo', (req, res) => {
   if (historicoVendas.length > 50) historicoVendas.pop();
 
   // ── LÓGICA DO RETORNO DE ALMOÇO ──
-  // Se quem acabou de pegar venda é o vendedor "retornado" (está na posição 0),
-  // a vez deve VOLTAR pra quem estava antes do retorno
   if (vezPausada && vezPausada.chave === chaveEscala && vezPausada.vendedorOriginal !== vendedor) {
-    // Remove o retornado da posição atual
     filaAtual[chaveEscala] = lista.filter(v => v !== vendedor);
-    // Adiciona o retornado no final
     filaAtual[chaveEscala].push(vendedor);
-    // Coloca o índice de volta no vendedor original
     const novaPos = filaAtual[chaveEscala].indexOf(vezPausada.vendedorOriginal);
     indiceFila = novaPos !== -1 ? novaPos : 0;
     vezPausada = null;
   } else {
-    // Comportamento normal — avança o índice
     indiceFila++;
   }
 
@@ -227,7 +225,6 @@ app.post('/ausente', (req, res) => {
 });
 
 // ── RETORNAR DO ALMOÇO ──
-// Vai pra posição 1 (vez) e guarda quem estava antes
 app.post('/retornar', (req, res) => {
   const { vendedor } = req.body;
   if (!vendedor) return res.json({ success: false, message: "Vendedor não informado." });
@@ -236,23 +233,18 @@ app.post('/retornar', (req, res) => {
 
   const { chaveEscala, lista, vendedor: vendedorAtual } = getEstadoAtual();
 
-  // Insere em todas as filas onde o vendedor deveria estar
   for (const chave in filaAtual) {
-    const listaBase = getListaBase(chave);
+    const listaBase = ordemPersonalizada[chave] ?? getListaBase(chave);
     if (!listaBase.includes(vendedor)) continue;
     if (filaAtual[chave].includes(vendedor)) continue;
 
     if (chave === chaveEscala) {
-      // No bloco atual: insere NA POSIÇÃO 1 (vez)
       const novaFila = [...filaAtual[chave]];
       const posVez = lista.length > 0 ? indiceFila % lista.length : 0;
       novaFila.splice(posVez, 0, vendedor);
       filaAtual[chave] = novaFila;
-
-      // GUARDA quem estava na vez antes — pra voltar depois que o retornado pegar venda
       vezPausada = { vendedorOriginal: vendedorAtual, chave: chaveEscala };
     } else {
-      // Outros blocos: insere no final
       filaAtual[chave].push(vendedor);
     }
   }
@@ -271,8 +263,8 @@ app.post('/salvar-ordem-exata', (req, res) => {
   const { chaveEscala } = getEstadoAtual();
 
   filaAtual[chaveEscala] = novaOrdem;
-  indiceFila = 0; // posição 0 da nova ordem é sempre a vez
-  vezPausada = null; // cancela qualquer lógica de retorno de almoço pendente
+  indiceFila = 0;
+  vezPausada = null;
 
   salvarEstado();
   res.json({ success: true, novaLista: novaOrdem });
@@ -284,12 +276,14 @@ app.post('/salvar-escala', (req, res) => {
   if (!novaEscala) return res.json({ success: false });
 
   for (const chave in novaEscala) {
+    ordemPersonalizada[chave] = novaEscala[chave]; // ⬅ salva ordem permanente
     filaAtual[chave] = novaEscala[chave].filter(v => !vendedoresAusentes.includes(v));
   }
 
   const { chaveEscala, vendedor } = getEstadoAtual();
   const novaPosicao = filaAtual[chaveEscala]?.indexOf(vendedor) ?? 0;
   indiceFila = novaPosicao !== -1 ? novaPosicao : 0;
+  vezPausada = null; // cancela retorno de almoço pendente
 
   salvarEstado();
   res.json({ success: true });
@@ -302,6 +296,7 @@ app.get('/reset-ausentes', (req, res) => {
   indiceFila = 0;
   ultimoBloco = "";
   vezPausada = null;
+  // ordemPersonalizada mantida — gestor não pediu reset dela
   salvarEstado();
   res.json({ success: true });
 });
@@ -313,6 +308,7 @@ app.get('/reset-geral', (req, res) => {
   vendedoresAusentes = [];
   filaAtual          = {};
   vezPausada         = null;
+  ordemPersonalizada = {}; // ⬅ reset geral limpa também a ordem personalizada
   salvarEstado();
   res.json({ success: true });
 });
@@ -325,7 +321,6 @@ app.get('/limpar-historico', (req, res) => {
 });
 
 // ── RESET DIÁRIO À MEIA-NOITE ──
-// Zera histórico, placar e ausentes — MAS preserva a ordem da fila
 function agendarResetDiario() {
   const agora  = new Date();
   const amanha = new Date();
@@ -337,7 +332,8 @@ function agendarResetDiario() {
     historicoVendas    = [];
     vendedoresAusentes = [];
     vezPausada         = null;
-    // ⚠ filaAtual e indiceFila NÃO resetam — mantém ordem do dia anterior
+    filaAtual          = {}; // será recriado com ordemPersonalizada via getFilaDoBloco
+    // ⚠ ordemPersonalizada e indiceFila NÃO resetam — mantém ordem do gestor
     salvarEstado();
     console.log('🌅 Reset diário executado:', new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }));
     agendarResetDiario();
