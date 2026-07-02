@@ -56,9 +56,6 @@ let vendedoresAusentes = estadoSalvo?.vendedoresAusentes ?? [];
 let filaAtual          = estadoSalvo?.filaAtual          ?? {};
 let vezPausada         = estadoSalvo?.vezPausada         ?? null;
 let ordemPersonalizada = estadoSalvo?.ordemPersonalizada ?? {}; // ⬅ ordem permanente por bloco
-// vezPausada = { vendedorOriginal: "Amanda", chave: "11" }
-// Significa: "tem alguém retornado na frente, mas depois que ele pegar
-//             a venda, a vez deve voltar pra Amanda"
 
 // Reaplica ausentes nas filas salvas
 if (vendedoresAusentes.length > 0) {
@@ -93,8 +90,6 @@ function getListaBase(chave) {
   }
 }
 
-// Garante que a fila daquele bloco existe — se não existe, cria com a ordem
-// personalizada pelo gestor (se houver) ou com a base padrão
 function getFilaDoBloco(chave) {
   if (!filaAtual[chave]) {
     const base = ordemPersonalizada[chave] ?? getListaBase(chave);
@@ -121,7 +116,6 @@ function getEstadoAtual() {
 app.get('/vez', (req, res) => {
   const { chaveEscala, lista, vendedor, horaBrasilia } = getEstadoAtual();
 
-  // Virada de bloco — ajusta índice proporcionalmente
   if (ultimoBloco !== "" && ultimoBloco !== chaveEscala) {
     indiceFila = lista.length > 0 ? indiceFila % lista.length : 0;
     salvarEstado();
@@ -143,6 +137,7 @@ app.get('/ausentes',  (req, res) => res.json({ ausentes: vendedoresAusentes }));
 app.get('/escala', (req, res) => {
   res.json({
     filaAtual,
+    ordemPersonalizada, // ⬅ envia a ordem permanente pro frontend
     todos: VENDEDORES.todos,
     blocos: {
       "08": VENDEDORES.manha1,
@@ -163,11 +158,9 @@ app.post('/proximo', (req, res) => {
     return res.json({ success: false, message: "Nenhum vendedor na fila." });
   }
 
-  // Registra a venda
   historicoVendas.unshift({ nome: vendedor, hora: horaLog, bloco: chaveEscala });
   if (historicoVendas.length > 50) historicoVendas.pop();
 
-  // ── LÓGICA DO RETORNO DE ALMOÇO ──
   if (vezPausada && vezPausada.chave === chaveEscala && vezPausada.vendedorOriginal !== vendedor) {
     filaAtual[chaveEscala] = lista.filter(v => v !== vendedor);
     filaAtual[chaveEscala].push(vendedor);
@@ -283,7 +276,7 @@ app.post('/salvar-escala', (req, res) => {
   const { chaveEscala, vendedor } = getEstadoAtual();
   const novaPosicao = filaAtual[chaveEscala]?.indexOf(vendedor) ?? 0;
   indiceFila = novaPosicao !== -1 ? novaPosicao : 0;
-  vezPausada = null; // cancela retorno de almoço pendente
+  vezPausada = null;
 
   salvarEstado();
   res.json({ success: true });
@@ -333,7 +326,7 @@ function agendarResetDiario() {
     vendedoresAusentes = [];
     vezPausada         = null;
     filaAtual          = {}; // será recriado com ordemPersonalizada via getFilaDoBloco
-    // ⚠ ordemPersonalizada e indiceFila NÃO resetam — mantém ordem do gestor
+    // ⚠ ordemPersonalizada NÃO reseta — mantém ordem definida pelo gestor
     salvarEstado();
     console.log('🌅 Reset diário executado:', new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }));
     agendarResetDiario();
