@@ -8,7 +8,6 @@ const BLOCOS_LABELS = {
   "17": "17:00 — Luis, Tifani, Amanda, Lucas, Ana Carolina",
   "18": "18:00 — Lucas, Ana Carolina"
 };
-
 let escalaEditavel = {};
 let todosVendedores = [];
 
@@ -38,13 +37,18 @@ function confirmarSenha() {
     .then(d => {
       todosVendedores = d.todos;
       escalaEditavel = {};
-      for (const chave in d.filaAtual) {
-        escalaEditavel[chave] = [...d.filaAtual[chave]];
-      }
-      // Garante que todos os blocos existem
+
+      // Prioridade: ordemPersonalizada > filaAtual > blocos padrão
       for (const chave in d.blocos) {
-        if (!escalaEditavel[chave]) escalaEditavel[chave] = [...d.blocos[chave]];
+        if (d.ordemPersonalizada?.[chave]) {
+          escalaEditavel[chave] = [...d.ordemPersonalizada[chave]];
+        } else if (d.filaAtual?.[chave]) {
+          escalaEditavel[chave] = [...d.filaAtual[chave]];
+        } else {
+          escalaEditavel[chave] = [...d.blocos[chave]];
+        }
       }
+
       document.getElementById('escala-senha-wrap').style.display = 'none';
       document.getElementById('escala-editor-wrap').style.display = 'flex';
       renderBlocosEscala();
